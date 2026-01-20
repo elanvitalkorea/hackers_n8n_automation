@@ -1,0 +1,1156 @@
+{
+  "name": "컨텐츠 자동화",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "912f3834-b1b0-4dc0-9277-de396d72d006",
+              "name": "rss",
+              "value": "=[\n\"https://techcrunch.com/feed/\",\n\"https://www.engadget.com/rss.xml\",\n\"https://www.wired.com/feed/rss\",\n\"https://theverge.com/rss/index.xml\"\n]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -64
+      ],
+      "id": "e2e99e98-b212-4093-9319-d24d9efa13aa",
+      "name": "Define RSS Feeds"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -64
+      ],
+      "id": "181f655d-f459-4774-b4d4-80c3b8faaa9f",
+      "name": "Split Feeds"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.rss }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        -64
+      ],
+      "id": "94bb7178-68b5-4311-8dfb-7387623aeef4",
+      "name": "Read RSS Feed"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "isoDate",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -64
+      ],
+      "id": "b8f07fbc-95d5-430f-a2e9-16b2d6156ed4",
+      "name": "Sort by Date"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        -64
+      ],
+      "id": "5ddc725a-396b-4bd9-bfed-d85a6d8a724c",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -720,
+        240
+      ],
+      "id": "3a03f95f-d13f-45f1-adc5-f5df2aba4793",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "757f85d8-7d1d-4ad3-8e79-119006457e77",
+              "name": "rss",
+              "value": "={{ $('Split Feeds').item.json.rss }}",
+              "type": "string"
+            },
+            {
+              "id": "2c2d13bd-e741-4a31-8ac3-e3f9899f858a",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "1feb8ae4-103b-436e-9494-f122d2db5b55",
+              "name": "pubDate",
+              "value": "={{ $json.pubDate }}",
+              "type": "string"
+            },
+            {
+              "id": "314eb9a0-9bb8-46f0-8f92-c2d773c7b29e",
+              "name": "content",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "2c0dac4b-1fd3-4bae-9379-7395c4106b27",
+              "name": "contentSnippet",
+              "value": "={{ $json.contentSnippet }}",
+              "type": "string"
+            },
+            {
+              "id": "81da92ce-cc99-4cd7-8c04-baf427c11b18",
+              "name": "isoDate",
+              "value": "={{ $json.isoDate }}",
+              "type": "string"
+            },
+            {
+              "id": "335cb8f4-afdb-40eb-9b54-c287eba93771",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3d2519b1-11f1-40cc-b791-ca2a4cd99d95",
+              "name": "creator",
+              "value": "={{ $json.creator }}",
+              "type": "string"
+            },
+            {
+              "id": "efdd2559-6e60-4133-86b9-9dbb5855c9d2",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -64
+      ],
+      "id": "899ddf91-e4b5-42a5-8a93-ceb883eb1fb5",
+      "name": "RSS source ADD"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Set Title').item.json.clean_title }}_{{ $('Set Title').item.json.unique_id }}.png",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1d-4_EFGpDuubKxc1WFke23ODF1i892GK",
+          "mode": "list",
+          "cachedResultName": "97 SNSUPLOAD",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1d-4_EFGpDuubKxc1WFke23ODF1i892GK"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        352,
+        256
+      ],
+      "id": "678b9b89-f62a-424e-bb5d-c8e269454efb",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Dv1taDm8pTxA53ie",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.approved }}",
+                    "rightValue": "Approve",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "dbbd7b98-71dc-4ead-ba55-3bff757bdd60"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approve"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0803c65a-6949-4062-81bf-64a76e2b410b",
+                    "leftValue": "={{ $json.data.approved }}",
+                    "rightValue": "Approve",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reject"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        112,
+        544
+      ],
+      "id": "40b97d40-8be6-4353-9c3a-9f38286f553d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U",
+          "mode": "list",
+          "cachedResultName": "Social Media Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Approve",
+            "ID": "={{ $('Add Contents').item.json.ID }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Article Title",
+              "displayName": "Article Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "imagePreview",
+              "displayName": "imagePreview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Twitter/X Link",
+              "displayName": "Twitter/X Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rejection Reason",
+              "displayName": "Rejection Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        896
+      ],
+      "id": "0abb3b7f-5a2c-4756-b1e4-8ac051374ead",
+      "name": "Update Approved Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "P4gJJe9lKc9WzWZj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U",
+          "mode": "list",
+          "cachedResultName": "Social Media Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Summary": "={{ $('Summary Article').item.json.content.parts[0].text }}",
+            "ID": "={{ $('Set Title').item.json.unique_id }}",
+            "Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "Article Title": "={{ $('Loop Over Items').item.json.title }}",
+            "Source": "= {{ $('Loop Over Items').item.json.rss }}",
+            "URL": "={{ $('Loop Over Items').item.json.link }}",
+            "Status": "=",
+            "image": "={{ $json.webContentLink.includes('&export=download') ? $json.webContentLink.replace('&export=download', '&export=view') : $json.webContentLink }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Article Title",
+              "displayName": "Article Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "imagePreview",
+              "displayName": "imagePreview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Twitter/X Link",
+              "displayName": "Twitter/X Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rejection Reason",
+              "displayName": "Rejection Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        256
+      ],
+      "id": "24695ece-dab7-4bbb-935e-8ed94db03267",
+      "name": "Add Contents",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "P4gJJe9lKc9WzWZj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U",
+          "mode": "list",
+          "cachedResultName": "Social Media Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KWz5dEQV7s-RBIHL1nKiqEt1v1ptSH1RaxFRBsYTJ8U/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Reject",
+            "ID": "={{ $('Add Contents').item.json.ID }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Article Title",
+              "displayName": "Article Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "image",
+              "displayName": "image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "imagePreview",
+              "displayName": "imagePreview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Twitter/X Link",
+              "displayName": "Twitter/X Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rejection Reason",
+              "displayName": "Rejection Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        736
+      ],
+      "id": "ca6db932-1a15-4bf6-b6be-49454b1f6383",
+      "name": "Reject Write",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "P4gJJe9lKc9WzWZj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -64
+      ],
+      "id": "d0a708da-517d-4706-9ce3-210f8c1c2547",
+      "name": "Limit 3"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1201158716272160788",
+          "mode": "list",
+          "cachedResultName": "elanvital Private Server",
+          "cachedResultUrl": "https://discord.com/channels/1201158716272160788"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1424172144190951474",
+          "mode": "list",
+          "cachedResultName": "n8ntest",
+          "cachedResultUrl": "https://discord.com/channels/1201158716272160788/1424172144190951474"
+        },
+        "content": "X에 게시되었습니다. ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        384,
+        528
+      ],
+      "id": "0980d519-db14-4302-b5ba-effb4b1a08aa",
+      "name": "X posted Send Message",
+      "webhookId": "c23568a9-b90a-4d5f-ab4e-cfd1bb6f7338",
+      "credentials": {
+        "discordBotApi": {
+          "id": "1yibvkILAJZwRPFu",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=다음 하기 기사를 5줄 불릿포인트로 요약해주세요.\n요약된 내용만 출력해주세요. \"다음은 요약입니다.\" 와 같은 본문 이외에 필요 없는 말은 하지마세요\n\n{{ $('Loop Over Items').item.json.title }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        256
+      ],
+      "id": "5634f7c3-6530-4cf1-b284-031e7af88724",
+      "name": "Summary Article",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3w4gWmGJOxf5DF2f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "=하기 컨텐츠에 어울리는 이미지를 생성해줘\n{{ $('Loop Over Items').item.json.contentSnippet }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        256
+      ],
+      "id": "33a957b5-ee4e-446a-bc93-40b0353ba8ad",
+      "name": "Generate a Thumbnail",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3w4gWmGJOxf5DF2f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "guildId": {
+          "__rl": true,
+          "value": "1201158716272160788",
+          "mode": "list",
+          "cachedResultName": "elanvital Private Server",
+          "cachedResultUrl": "https://discord.com/channels/1201158716272160788"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1424172144190951474",
+          "mode": "list",
+          "cachedResultName": "n8ntest",
+          "cachedResultUrl": "https://discord.com/channels/1201158716272160788/1424172144190951474"
+        },
+        "message": "=**✅ SNS 게시 승인 요청이 도착했습니다.**\n\n**- ID:** {{ $json.ID }}\n**- 제목:** {{ $json[\"Article Title\"] }}\n**- 출처:** {{ $json.Source }}\n**- 원문 링크:** {{ $json.URL }}\n\n**- 요약:**\n{{ $json.Summary }}\n\n{{ $json.image }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 30,
+              "resumeUnit": "minutes"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        544
+      ],
+      "id": "02f36994-5617-4307-bd5d-26a01878986d",
+      "name": "HITL discord",
+      "webhookId": "37fc7608-6dc2-4878-a724-628a71db3a85",
+      "credentials": {
+        "discordBotApi": {
+          "id": "1yibvkILAJZwRPFu",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "13d9a722-b835-49f6-be3f-790d4700e3cf",
+              "name": "unique_id",
+              "value": "={{ $now.toMillis() }}",
+              "type": "string"
+            },
+            {
+              "id": "da830503-963b-4835-a31b-4b644ddc00b3",
+              "name": "clean_title",
+              "value": "={{ $('Loop Over Items').item.json.title.slice(0, 20).replace(/ /g, '_').replace(/[^\\w.-]/g, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        256
+      ],
+      "id": "112c0963-1b37-4799-ae2c-de05dfdee609",
+      "name": "Set Title"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Define RSS Feeds": {
+      "main": [
+        [
+          {
+            "node": "Split Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Feeds": {
+      "main": [
+        [
+          {
+            "node": "Read RSS Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "RSS source ADD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort by Date": {
+      "main": [
+        [
+          {
+            "node": "Limit 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Define RSS Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set Title",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS source ADD": {
+      "main": [
+        [
+          {
+            "node": "Sort by Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Add Contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "X posted Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Approved Status": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Contents": {
+      "main": [
+        [
+          {
+            "node": "HITL discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Write": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit 3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X posted Send Message": {
+      "main": [
+        [
+          {
+            "node": "Update Approved Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Article": {
+      "main": [
+        [
+          {
+            "node": "Generate a Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HITL discord": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Title": {
+      "main": [
+        [
+          {
+            "node": "Summary Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "330c1a7b-b392-4e90-9b06-ef4792dbff20",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "AFu7eT9xlUSJwlLM",
+  "tags": []
+}

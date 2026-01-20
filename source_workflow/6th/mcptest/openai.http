@@ -1,0 +1,23 @@
+### OpenAI Chat Completions API - Recipe Extraction
+
+POST https://api.openai.com/v1/chat/completions
+Authorization: Bearer $OPENAI_API_KEY
+Content-Type: application/json
+
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful assistant that extracts structured information from recipe webpages. Respond only with valid JSON."
+    },
+    {
+      "role": "user",
+      "content": "Extract the following information from this recipe HTML in JSON format with keys: title (string), description (string), ingredients (array of strings), method (array of strings).\n\nAlways return a valid JSON object even if some fields are missing.\n\nHTML: [여기에 HTML 내용 입력 (최대 8000자)]"
+    }
+  ],
+  "response_format": {
+    "type": "json_object"
+  },
+  "temperature": 0
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google ADK Hello World</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Google ADK Hello World</h1>
+            <p class="subtitle">Google Agent Development Kit을 사용한 간단한 채팅 예제</p>
+        </header>
+        
+        <div class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        안녕하세요! Google ADK Hello World 에이전트입니다. 무엇을 도와드릴까요?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="message-input" 
+                    placeholder="메시지를 입력하세요..." 
+                    autocomplete="off"
+                >
+                <button id="send-button">전송</button>
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
+

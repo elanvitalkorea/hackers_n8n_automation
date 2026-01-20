@@ -1,0 +1,12 @@
+POST https://elanvital.ngrok.app/webhook-test/f1612c77-9214-4dfb-b111-d6ed26717175
+Content-Type: application/json
+
+{
+  "name": "진주성",
+  "email": "joosung@elanvital.ai",
+  "phone": "010-9530-0542",
+  "company": "ElanvitalAI",
+  "position": "CEO",
+  "website": "elanvital.ai",
+  "address": "경기도 수원 영통구 도청로10"
+}

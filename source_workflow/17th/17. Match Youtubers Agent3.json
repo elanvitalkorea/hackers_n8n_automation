@@ -1,0 +1,369 @@
+{
+  "name": "Match Youtubers Agent3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0b683688-ddc3-4140-9498-01f6d7ab2f7d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -48
+      ],
+      "id": "4874d814-32a2-4948-ae6c-8b3773fce73e",
+      "name": "Webhook",
+      "webhookId": "0b683688-ddc3-4140-9498-01f6d7ab2f7d"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**[캠페인 정보 (갑: 광고주)]**\n\n  - **회사명:** {{ $json.ai_analysis.companyName }}\n  - **제품/서비스:** {{ $json.ai_analysis.productName }}\n  - **총 예산 (USD):** {{ $json.ai_analysis.budgetUSD }}\n\n**[협업 대상 (을: 유튜버) 및 용역비]**\n(17-2에서 저장한 `matched_youtubers` 단일 JSON 객체. 여기에는 **원본 단가**와 최종 **집행 예산**이 모두 포함되어 있다.)\n\n```json\n{{ JSON.stringify($json.matched_youtubers, null, 2) }}\n```\n\n**[Task]**\n\n1.  위 정보를 바탕으로 **\"광고 캠페인 용역 계약서\"** 를 Markdown 형식으로 작성해라.\n2.  \"갑\"(광고주)과 \"을\"(유튜버 1명)을 명시해라.\n3.  **(중요) 계약의 목적 (제품 광고)과 '계약 금액'을 명시해야 한다.**\n4.  **'계약 금액'** 항목에는 [협업 대상] JSON의 **`cost_per_video_usd`** 필드 값을 **최종 용역비(지급액)** 로 명확히 기술해야 한다. (`original_cost_per_video_usd`는 참고용 원본 단가이며, 실제 지급액은 `cost_per_video_usd`이다.)\n5.  계약 기간, 비밀 유지 조항 등 표준 계약서 항목을 포함해라.",
+        "options": {
+          "systemMessage": "너는 법무팀 AI다. 광고 캠페인 정보를 바탕으로 표준 용역 계약서 초안을 Markdown으로 생성해야 한다."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "8957231d-8cb5-4f7b-b618-9dd6fa05fb32",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.1-chat-latest",
+          "mode": "list",
+          "cachedResultName": "gpt-5.1-chat-latest"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        96
+      ],
+      "id": "e9a4a989-6da3-44d0-9eaa-7ce64576edc1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pdf.elanvital.dev/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=title",
+              "value": "={{ $('Update State').item.json.ai_analysis.companyName }} - {{ $('Update State').item.json.ai_analysis.productName }} 유튜브 매칭 결과 보고서"
+            },
+            {
+              "name": "markdownContent",
+              "value": "={{ $json.markdownContent }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        224
+      ],
+      "id": "e3026cd7-9ee9-4fcc-beef-d0b335e08e1e",
+      "name": "Generate PDF"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "1301607555",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "=✅ 모든 작업 완료!\n\n{{ $('Update State').item.json.ai_analysis.companyName }} - {{ $('Update State').item.json.ai_analysis.productName }}\n광고 계약서 파일입니다."
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        224
+      ],
+      "id": "cde57ed6-4f49-4fd8-bc2e-0d6dabff38f1",
+      "name": "Send a contract document",
+      "webhookId": "4bceff6c-69eb-4818-a146-0d2cafc7207f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qWdebRRardNnIODB",
+          "name": "Telegram elantestbot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "809888dc-fabd-491e-9e4d-6865f39e228f",
+              "name": "markdownContent",
+              "value": "={{ $json.generated_contract }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -48
+      ],
+      "id": "ec27092d-3ef6-4b6b-b6ed-983cd52d06c8",
+      "name": "Format for PDF Backend"
+    },
+    {
+      "parameters": {
+        "bucketName": "hackers-survey-report",
+        "fileKey": "={{ $json.key }}"
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        64,
+        224
+      ],
+      "id": "843bb8a2-2bc9-449d-9546-3460c9ff5598",
+      "name": "Download Contract",
+      "credentials": {
+        "aws": {
+          "id": "DpOHaYA1HdYit6Xn",
+          "name": "AWS account suvey report"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "=eq",
+              "keyValue": "={{ $('Get Data').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "generated_contract",
+              "fieldValue": "={{ $json.output }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -48
+      ],
+      "id": "1b6c5a26-017b-457f-afb2-bcecbbf4e8db",
+      "name": "Update State",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.campaign_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "ba59e3f6-a824-4840-9b85-7dc2d92dc1a3",
+      "name": "Get Data",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1767d4f2-3e1b-4bc4-b6eb-a47b60e43e3b",
+              "name": "campaign_id",
+              "value": "={{ $json.body.campaign_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "17d47200-25cf-417e-b922-7a75f7d6c024",
+      "name": "Set Campaign ID"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Campaign ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PDF": {
+      "main": [
+        [
+          {
+            "node": "Download Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a contract document": {
+      "main": [
+        []
+      ]
+    },
+    "Format for PDF Backend": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Contract": {
+      "main": [
+        [
+          {
+            "node": "Send a contract document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update State": {
+      "main": [
+        [
+          {
+            "node": "Format for PDF Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Campaign ID": {
+      "main": [
+        [
+          {
+            "node": "Get Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "076adff4-2f20-4a25-8606-4a41912ddaef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "v2y2mBetxb8r1RNf",
+  "tags": []
+}

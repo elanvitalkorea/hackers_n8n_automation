@@ -1,0 +1,200 @@
+/* 
+ * ============================================
+ * Tailwind 없이 일반 CSS만 사용한 스타일
+ * ============================================
+ * 
+ * 😱 문제점:
+ * 1. 클래스 이름 고민 필요
+ * 2. 파일 전환 필요 (tsx ↔ css)
+ * 3. Dead CSS 관리 어려움
+ * 4. 코드 중복 발생
+ * 
+ * ✅ Tailwind: 이 파일 전체가 불필요 (177줄 → 0줄)
+ */
+
+/* 메인 컨테이너 */
+.main-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 32px;
+  /* Tailwind: max-w-4xl mx-auto p-8 */
+}
+
+/* 페이지 제목 */
+.page-title {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 40px;
+  color: #111827;
+  /* Tailwind: text-5xl font-extrabold text-center mb-10 text-gray-900 */
+}
+
+/* 링크 스타일 */
+.link-style {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 1.125rem;
+  /* Tailwind: text-blue-600 text-lg */
+}
+
+.link-style:hover {
+  text-decoration: underline;
+  /* Tailwind: hover:underline */
+}
+
+/* 포스트 카드 */
+.post-card {
+  padding: 24px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  /* Tailwind: p-6 bg-white border border-gray-200 rounded-xl shadow-md */
+}
+
+.post-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-transform: capitalize;
+  margin-bottom: 12px;
+}
+
+.post-body {
+  color: #4b5563;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* 좋아요 버튼 */
+.like-button {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Tailwind: px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold transition-colors shadow-sm */
+}
+
+.like-button:hover {
+  background-color: #2563eb;
+  /* Tailwind: hover:bg-blue-600 */
+}
+
+.like-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  /* Tailwind: disabled:opacity-50 disabled:cursor-not-allowed */
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  /* Tailwind: inline-block w-4 h-4 border-2 border-gray-100 border-t-blue-500 rounded-full animate-spin mr-2 */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+  /* Tailwind: animate-spin (내장 애니메이션) */
+}
+
+/* About 페이지 스타일 */
+.about-main {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 32px;
+  text-align: center;
+}
+
+.about-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 48px;
+  color: #111827;
+}
+
+.about-text {
+  font-size: 1.25rem;
+  color: #374151;
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+/* 중첩 선택자 (유지보수 어려움) */
+.post-card .post-title:first-child {
+  margin-top: 0;
+}
+
+.like-button.liked {
+  background-color: #10b981;
+}
+
+/* 배경 및 전체 레이아웃 */
+body {
+  background-color: #f9fafb;
+  color: #111827;
+  min-height: 100vh;
+}
+
+/* 추가 클래스 정의 */
+.custom-body {
+  font-family: inherit;
+}
+
+.main-layout {
+  background-color: #f9fafb;
+  color: #111827;
+  min-height: 100vh;
+}
+
+.posts-space {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.link-container {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.error-message {
+  text-align: center;
+  color: #6b7280;
+}
+
+/* 호버 효과 */
+.main-container .page-title:hover {
+  color: #1f2937;
+  transition: color 0.2s ease-in-out;
+}
+
+.post-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  transition: all 0.2s ease-in-out;
+}
+
+/* 인라인 스타일 대신 클래스 사용 예시 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}

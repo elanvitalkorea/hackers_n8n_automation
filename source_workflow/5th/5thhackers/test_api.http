@@ -1,0 +1,28 @@
+
+```http
+### 모든 할 일 조회
+GET http://localhost:3000/api/todos
+
+### 새로운 할 일 생성
+POST http://localhost:3000/api/todos
+Content-Type: application/json
+
+{
+    "title": "REST Client로 테스트하기"
+}
+
+### 특정 할 일 조회  
+GET http://localhost:3000/api/todos/1759111110454
+
+### 할 일 수정
+PUT http://localhost:3000/api/todos/1
+Content-Type: application/json
+
+{
+    "title": "수정된 제목",
+    "completed": true
+}
+
+### 할 일 삭제
+DELETE http://localhost:3000/api/todos/1
+```

@@ -1,0 +1,7 @@
+agent_class: SequentialAgent
+name: blogger_workflow
+description: A sequential workflow to first research a topic and then write a blog
+  post about it.
+sub_agents:
+- config_path: researcher_agent.yaml
+- config_path: writer_agent.yaml

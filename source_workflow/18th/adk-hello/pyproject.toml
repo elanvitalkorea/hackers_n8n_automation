@@ -1,0 +1,18 @@
+[project]
+name = "adk-hello"
+version = "0.1.0"
+description = "Google ADK Hello World 예제"
+requires-python = ">=3.9"
+dependencies = [
+    "google-adk>=1.0.0",
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+    "python-dotenv>=1.0.0",
+    "google-genai>=0.3.0",
+]
+
+# 이 프로젝트는 설치 가능한 패키지가 아닌 애플리케이션이므로
+# uv가 editable install을 시도하지 않도록 설정
+[tool.uv]
+package = false
+

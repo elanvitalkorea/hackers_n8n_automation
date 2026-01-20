@@ -1,0 +1,140 @@
+# API 키 변수 정의
+@FIRECRAWL_API_KEY=fc-cfa792411d834910a552f1dd8a4ed90b
+
+
+### 1. Scrape 작업 -  프롬프트 Only 
+# @name scrapeAITimesArticle
+POST https://api.firecrawl.dev/v2/scrape
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "url": "https://www.aitimes.com/news/articleView.html?idxno=202947",
+  "formats": [
+    {
+      "type": "json",
+      "prompt": "이 기사에서 제목(title), 전체 본문 내용(content), 그리고 기자 이름(author)을 추출해서 알려줘."
+    }
+  ]
+}
+
+### 2. Scrape 작업 - 스키마 + 서머리
+# @name scrapeTaskWithSummary
+POST https://api.firecrawl.dev/v2/scrape
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "url": "https://www.aitimes.com/news/articleView.html?idxno=202946",
+  "formats": [
+    "summary",
+    {
+      "type": "json",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "기사 제목"
+          },
+          "contents": {
+            "type": "string",
+            "description": "본문 전체 텍스트(HTML 태그 제거)"
+          },
+          "author": {
+            "type": "string",
+            "description": "저자 또는 기자 이름 "
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "발행 시간 (yyyy-MM-dd HH:mm)"
+          }
+        },
+        "required": ["title", "contents", "author", "timestamp"]
+      }
+    }
+  ]
+}
+
+
+### 3. Scrape 작업 Youtube 동영상
+# @name scrapeTask
+POST https://api.firecrawl.dev/v2/scrape
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=idccdssOZQ8",
+  "formats": [ "markdown" ]
+}
+
+###
+
+
+### 4. Extract 작업 시작 (POST) - 새로운 프롬프트
+# @name extractTaskNew
+POST https://api.firecrawl.dev/v2/extract
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "urls": ["https://www.aitimes.com/news/articleView.html?idxno=202947"],
+  "prompt": "Extract the title, content, and the author from this news article."
+}
+
+###
+
+### 4. 결과 조회 (GET) - 새로운 요청 ID 사용
+GET https://api.firecrawl.dev/v2/extract/{{extractTaskNew.response.body.$.id}}
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+
+###
+
+### 5. Search 작업 (POST)
+POST https://api.firecrawl.dev/v2/search
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "query": "ai agents",
+  "sources": ["news"],
+  "limit": 5,
+  "scrapeOptions": {
+    "formats": ["markdown", "links"]
+  }
+}
+
+###
+
+### 6. Map 작업 (POST)
+# @name mapTask
+POST https://api.firecrawl.dev/v2/map
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+Content-Type: application/json
+
+{
+  "url": "https://docs.crewai.com/"
+}
+
+
+### 7. Crawl 작업 (POST)
+# @name crawlTask
+POST https://api.firecrawl.dev/v2/crawl
+Content-Type: application/json
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+
+{
+  "url": "https://docs.n8n.io/",
+  "scrapeOptions": {
+    "formats": ["markdown"]
+  },
+  "limit": 10000 
+}
+
+###
+
+### 7. Crawl 결과 조회 (GET)
+GET https://api.firecrawl.dev/v2/crawl/{{crawlTask.response.body.$.id}}
+Authorization: Bearer {{FIRECRAWL_API_KEY}}
+
+

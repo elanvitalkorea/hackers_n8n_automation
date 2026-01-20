@@ -1,0 +1,16 @@
+{
+  "name": "mcptest",
+  "version": "1.0.0",
+  "description": "간단하고 아름다운 Todo 웹 애플리케이션입니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "crypto-js": "^4.2.0"
+  }
+}

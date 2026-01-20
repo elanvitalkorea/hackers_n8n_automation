@@ -1,0 +1,11 @@
+agent_class: LlmAgent
+name: researcher_agent
+model: gemini-2.5-pro
+instruction: 'You are a research assistant.
+
+  Given a topic, your job is to use the available tools to find relevant information
+  and key points.
+
+  Summarize your findings clearly for the writer agent.'
+tools:
+- name: google_search

@@ -1,0 +1,166 @@
+{
+  "name": "survey_backend",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b5fe1021-9397-40b7-ae8e-2f43ce5cfa0e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://worrumncbgcaempofiku.supabase.co/rest/v1/rpc/get_dashboard_stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c36f3131-d8f3-40e9-ad0c-052e14b60824",
+      "name": "Supabase GetDashboard Status",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "sliHxSzS6if9odPK",
+          "name": "Supabase Bearer"
+        },
+        "httpHeaderAuth": {
+          "id": "sVIEv23hgljkYS4s",
+          "name": "supadata key"
+        },
+        "httpCustomAuth": {
+          "id": "Gin8oTpsXoRgyzbX",
+          "name": "Supabase custom"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. HTTP Request 노드의 결과에서 실제 데이터 추출\nconst data = $input.first().json;\n// 2. 총 응답자 수\nconst total = data.total_respondents;\n\n// 3. 오늘 날짜로 동적 타이틀 생성 (YYYY-MM-DD)\n// $now 변수는 require 없이 바로 사용 가능합니다.\nconst today = $now.toFormat('yyyy-MM-dd');\nconst title = `n8n 자동화 주간 만족도 리포트 (${today})`;\n\n// 4. Puppeteer가 사용할 'items' 배열 초기화\nconst itemsList = [];\n\n// --- 기본 통계 추가 ---\nitemsList.push({\n  name: \"총 응답자 수\",\n  value: `${total} 명`\n});\n\nitemsList.push({\n  name: \"현재 NPS 점수\",\n  value: `${data.nps_score.toFixed(1)} 점` // 소수점 첫째 자리까지\n});\n\n// --- 직무별 분포 추가 (정렬 없이) ---\nitemsList.push({\n  name: \"--- 직무별 응답 분포 ---\",\n  value: `(총 ${total}명)`\n});\n\n// data.position_distribution 배열을 순회하며 itemsList에 추가\nfor (const item of data.position_distribution) {\n  // 백분율 계산\n  const percent = ((item.count / total) * 100).toFixed(1); \n  itemsList.push({\n    name: item.position,\n    value: `${item.count}명 (${percent}%)`\n  });\n}\n\n// --- 기업 규모별 분포 추가 (정렬 없이) ---\nitemsList.push({\n  name: \"--- 기업 규모별 응답 분포 ---\",\n  value: `(총 ${total}명)`\n});\n\n// data.company_size_distribution 배열을 순회하며 itemsList에 추가\nfor (const item of data.company_size_distribution) {\n  const percent = ((item.count / total) * 100).toFixed(1);\n  itemsList.push({\n    // original 키 이름(company_size)을 사용합니다.\n    name: item.company_size, \n    value: `${item.count}명 (${percent}%)`\n  });\n}\n\n// 5. 최종 객체 반환\n// 이 객체가 n8n 워크플로우의 다음 노드(Puppeteer 호출)로 전달됩니다.\nreturn {\n  title: title,\n  items: itemsList\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b3920ac2-b5f9-455f-8bfc-1cc48fd071ff",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pdf.elanvital.dev/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=title",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "items",
+              "value": "={{ $json.items }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "68ec7ec3-5b10-459f-9fbb-58b8140013cb",
+      "name": "Generate PDF"
+    },
+    {
+      "parameters": {
+        "bucketName": "hackers-survey-report",
+        "fileKey": "={{ $json.key }}"
+      },
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        864,
+        0
+      ],
+      "id": "192c3f70-8073-4ef8-9fe3-319f56b46c33",
+      "name": "Download a file",
+      "credentials": {
+        "aws": {
+          "id": "DpOHaYA1HdYit6Xn",
+          "name": "AWS account suvey report"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Supabase GetDashboard Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase GetDashboard Status": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PDF": {
+      "main": [
+        [
+          {
+            "node": "Download a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "43c9ecbf-1470-458b-97e0-211d9a8df163",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "eSAZVV2apCqSs2bD",
+  "tags": []
+}

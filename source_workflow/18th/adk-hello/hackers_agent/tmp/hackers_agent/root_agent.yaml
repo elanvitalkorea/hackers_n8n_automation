@@ -1,0 +1,12 @@
+agent_class: LlmAgent
+name: blog_writer_root
+model: gemini-2.5-pro
+instruction: 'You are the orchestrator for a blog writing task.
+
+  Your goal is to delegate the task of writing a blog post to the specialized blogger
+  workflow.
+
+  Start by transferring control to the ''blogger_workflow'' to handle the research
+  and writing process.'
+sub_agents:
+- config_path: blogger_workflow.yaml

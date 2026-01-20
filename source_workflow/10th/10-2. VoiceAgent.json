@@ -1,0 +1,324 @@
+{
+  "name": "2. VoiceAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "be4aec4c-0846-46e9-a9f2-a47f33c46305",
+      "name": "When chat message received",
+      "webhookId": "f524d08b-e940-4227-9ceb-49901402b1d5"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        208
+      ],
+      "id": "9a707a5e-71cf-4757-950e-34c8a3b75201",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "사용자가 구글 캘린더에서 일정을 생성할 때 사용한다",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `Event 에 대해서만 저장하고 시간값은 무시해주세요`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        208
+      ],
+      "id": "8e14313c-8d72-441c-aff9-442df96e5ab1",
+      "name": "create_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        208
+      ],
+      "id": "36d13e5a-6e6b-493f-90c7-90efa31c7398",
+      "name": "get_many_events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        208
+      ],
+      "id": "48ff8d9c-11c3-4018-9206-67e576674f18",
+      "name": "delete_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.query }}",
+        "options": {
+          "systemMessage": "=## Role\n너는 일정 관리 비서야. 일정 생성 / 일정 여러개 조회/ 일정 삭제가 가능해 \n\n## 출력형식\n- 구어체 즉 Voice Model이 문제 없도록 시간 형식으로 모두 바꿔주세요 \n- 시간 출력 형식\n\t- 특수기호는 모두 적당한 의미로 치환해주세요 \n\t- 17:30~19:30 -> 17시30분 부터 2시간 \n\t- `\\n` 이런 줄바꿈 문자는 모두 없애주세요 \n\n## Tool\n**Calander Management Tools**\n- \"create_event\" : 일정을 만들 때 사용\n- \"get_many_events\" : 일정을 여러개 조회 시 사용\n- \"delete_event\" : 일정삭제 시 사용 \n\ntoday's date is {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "684a6d56-2564-4829-895b-ebefb004a76a",
+      "name": "Calendar Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5c0532ef-e2c3-489b-9d10-05f7448077ab",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -208,
+        176
+      ],
+      "id": "5727de1b-a823-42e4-9040-d84af149a0db",
+      "name": "Webhook",
+      "webhookId": "5c0532ef-e2c3-489b-9d10-05f7448077ab"
+    },
+    {
+      "parameters": {
+        "content": "## ElevenLabs Voice Agent\n",
+        "height": 576,
+        "width": 1168,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -160
+      ],
+      "id": "486cbef6-89b0-4d0c-ba8f-6c426bb70084",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "d3c5baec-cef1-491c-8fd1-0cbd84fc03b8",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "content": "## 설정 힌트\n\nWebhook : `{{ $json.body.query }}`\nSimple Memory 세션:\n`{{ $json.webhookUrl.split('/').pop() }}`\n",
+        "height": 432,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        -144
+      ],
+      "id": "d9b19ce0-8995-4c94-8f40-eef8c4ba3c22",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.webhookUrl.split('/').pop() }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        208
+      ],
+      "id": "f28018a4-13f0-430b-8c5c-14160622e855",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_many_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7158259-2409-4166-ad93-48679caa9345",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "35302J8YDqkJsdeB",
+  "tags": []
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "title": "API 학습하기",
+    "completed": false,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "CRUD 구현해보기",
+    "completed": false,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 1759111110454,
+    "title": "REST Client로 테스트하기",
+    "completed": false,
+    "createdAt": "2025-09-29T01:58:30.454Z"
+  },
+  {
+    "id": 1759113305671,
+    "title": "인증된 사용자의 할 일",
+    "completed": false,
+    "createdAt": "2025-09-29T02:35:05.671Z"
+  }
+]

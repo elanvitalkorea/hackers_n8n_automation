@@ -1,0 +1,99 @@
+{
+  "name": "ai news curation mcp trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ai_curation_news"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -96
+      ],
+      "id": "48718625-a48e-4267-9650-8210a2323e51",
+      "name": "MCP Server Trigger",
+      "webhookId": "4797251f-f7bf-4161-a19a-814ea97f7a49",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "description": "The tool used when searching for AI Curation news",
+        "workflowId": {
+          "__rl": true,
+          "value": "ewJaordDxYyTnRE3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ewJaordDxYyTnRE3",
+          "cachedResultName": "AI News Curation For Workflow call"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `User query`, 'string') }}",
+            "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sessionId', `sessionId for chat memory`, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        160
+      ],
+      "id": "b09c6cfc-7850-46ac-8f92-e6b2b93e9984",
+      "name": "ai_news_curation"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ai_news_curation": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bf9b44c5-fa51-4a9a-998c-a4f643d04504",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "E2jYkI7x3gLMZ2HX",
+  "tags": []
+}

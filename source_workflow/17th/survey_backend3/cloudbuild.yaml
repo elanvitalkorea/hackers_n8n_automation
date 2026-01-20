@@ -1,0 +1,21 @@
+# cloudbuild.yaml (Connect to Repo + Docker 전용)
+# 빌드 & 푸시만 → 배포는 Cloud Run이 자동 처리
+
+steps:
+  # 1. Docker 빌드
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/n8n-pdf-generator:$COMMIT_SHA'
+      - '.'
+
+  # 2. Artifact Registry 푸시
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/n8n-pdf-generator:$COMMIT_SHA'
+
+# 자동 배포용 이미지 지정
+images:
+  - 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/my-repo/n8n-pdf-generator:$COMMIT_SHA'

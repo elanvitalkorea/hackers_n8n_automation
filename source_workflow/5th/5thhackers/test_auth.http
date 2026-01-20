@@ -1,0 +1,36 @@
+### 회원가입
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "id": "testuser",
+    "password": "testpass123"
+}
+
+###
+
+### 로그인
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "id": "testuser",
+    "password": "testpass123"
+}
+
+###
+
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ0ZXN0dXNlciIsImlhdCI6MTc1OTExMzE5NiwiZXhwIjoxNzU5MTE2Nzk2fQ.qmvC_NnbhujTSWJfwuSL53BGL5wKfvz-0srEutRjm5M
+
+### 인증이 필요한 모든 할 일 조회
+GET http://localhost:3000/api/todos
+Authorization: Bearer {{authToken}}
+
+### 인증이 필요한 할 일 생성 (JWT 토큰 수동 사용)
+POST http://localhost:3000/api/todos
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "인증된 사용자의 할 일"
+}

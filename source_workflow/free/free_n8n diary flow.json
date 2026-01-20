@@ -1,0 +1,152 @@
+{
+  "name": "n8n diary flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0a646f66-8799-485b-8f81-5d219316a729",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -64
+      ],
+      "id": "8e453dc8-aef6-401c-b140-487285e495bb",
+      "name": "Webhook",
+      "webhookId": "0a646f66-8799-485b-8f81-5d219316a729"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1301607555",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "={{ $('Webhook').item.json.body.content }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "e96a1704-cd71-4366-9e3e-51f5239484f8",
+      "name": "Send a photo message",
+      "webhookId": "a1cc8e69-944d-4be0-a8bf-549f30ef960f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qWdebRRardNnIODB",
+          "name": "Telegram elantestbot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=하기 다이어리 내용을 이미지 생성을 위한 프롬프트로 만들어주세요 \n\n제목 : {{ $json.body.title }}\n내용 : {{ $json.body.content }}\n\n정확하게 영문 프롬프트만 출력하고 나머지는 출력하지 말아주세요"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -64
+      ],
+      "id": "8257ee36-6dd8-40ff-9b63-872564a5b5f2",
+      "name": "Make Image Prompt",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3w4gWmGJOxf5DF2f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "914338d5-ded0-4004-8e0c-c7d0472fb7b4",
+      "name": "Diary Image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3w4gWmGJOxf5DF2f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Make Image Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make Image Prompt": {
+      "main": [
+        [
+          {
+            "node": "Diary Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Diary Image": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "440cf24c-d161-4668-bc05-d75cb58f01f8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "q16XWiLCV8oq3sWb",
+  "tags": []
+}

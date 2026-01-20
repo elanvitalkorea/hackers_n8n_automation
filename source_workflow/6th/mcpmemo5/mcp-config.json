@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "memo-server": {
+      "command": "/opt/homebrew/bin/node",
+      "args": ["/Users/joosung/source/temp/mcpmemo5/index.js"],
+      "env": {
+        "SUPABASE_URL": "https://wdbqdtqwctavmtklfvxm.supabase.co",
+        "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkYnFkdHF3Y3Rhdm10a2xmdnhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczMTMxODIsImV4cCI6MjA3Mjg4OTE4Mn0.fIFLlcrvc4-_6Za2lZ63ZsU2A741KKtIKaPgvmV4KoM"
+      }
+    }
+  }
+}
+

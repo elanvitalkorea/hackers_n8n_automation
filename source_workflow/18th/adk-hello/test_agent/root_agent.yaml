@@ -1,0 +1,12 @@
+name: blog_writer
+model: gemini-2.5-pro
+agent_class: LlmAgent
+description: An agent that researches and writes a blog post on a given topic.
+instruction: You are an expert blog writer. Your task is to write a compelling
+  and informative blog post on the topic provided by the user. Use the available
+  tools to research the topic, gather information, and then write a
+  well-structured blog post. The final output should be only the blog post
+  content.
+sub_agents: []
+tools:
+  - name: google_search

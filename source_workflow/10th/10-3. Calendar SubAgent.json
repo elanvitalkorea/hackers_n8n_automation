@@ -1,0 +1,273 @@
+{
+  "name": "Calendar SubAgent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        208
+      ],
+      "id": "c9a033c9-db26-418f-8c9d-e5ef6fcb8ad8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "사용자가 구글 캘린더에서 일정을 생성할 때 사용한다",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `Event 에 대해서만 저장하고 시간값은 무시해주세요`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        208
+      ],
+      "id": "ae95a261-adcd-4f02-912a-bf1b1c42a821",
+      "name": "create_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        208
+      ],
+      "id": "6f9e85b0-069b-441c-8c02-937e7f8663b8",
+      "name": "get_many_events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        208
+      ],
+      "id": "08e43d13-ec48-4f20-91b9-b30c9ba6e517",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "joosung80@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joosung80@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        208
+      ],
+      "id": "1d5d403e-6bee-437f-a371-8b86511ddefa",
+      "name": "delete_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "eldk7gbz45dWEKI4",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=userQuery:\n{{ $json.userQuery }}\n\njobDescription:\n{{ $json.jobDescription }}",
+        "options": {
+          "systemMessage": "=## Role\n너는 일정 관리 비서야. 일정 생성 / 일정 여러개 조회/ 일정 삭제가 가능해 \n'userQuery', 'joDescription'을 참고해서 어떤 툴을 사용할지 결정해주세요 \n부족한 정보가 있다면 유저에게 다시 되물어주세요 \n\n## Tool\n**Calander Management Tools**\n- \"create_event\" : 일정을 만들 때 사용\n- \"get_many_events\" : 일정을 여러개 조회 시 사용\n- \"delete_event\" : 일정삭제 시 사용 \n\ntoday's date is {{ $now }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "4d8dfbf8-645f-4a7f-ae21-d07faae4ad5c",
+      "name": "Calendar Agent"
+    },
+    {
+      "parameters": {
+        "content": "## Sub Agent\n",
+        "height": 576,
+        "width": 1168,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -160
+      ],
+      "id": "dcd75073-05ca-4b9e-b272-97f06ddd77ab",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "userQuery"
+            },
+            {
+              "name": "jobDescription"
+            },
+            {
+              "name": "sessionId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "59dbe648-83ae-490a-a45f-2c51f46358f7",
+      "name": "personal assitant data"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_many_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Agent": {
+      "main": [
+        []
+      ]
+    },
+    "personal assitant data": {
+      "main": [
+        [
+          {
+            "node": "Calendar Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5a03ac96-567b-40fc-a9e0-25aa3f9181c0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "hmkjoL4lprgoNzfQ",
+  "tags": []
+}

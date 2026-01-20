@@ -1,0 +1,526 @@
+{
+  "name": "4. RAG Vector Store",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1088,
+        896
+      ],
+      "id": "3c79be33-6830-4ef3-ac6f-abc0f8d8a42d",
+      "name": "When chat message received",
+      "webhookId": "ab614f7d-ff29-4837-9347-72b8498586b6"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=너는 개인 비서야. 너는 현재 세가지 업무를 담당하고 있어 하나는 Gmail 관리이고, 하나는 일정관리야, 테슬라 매뉴얼에 대한 답도 주는 역할이 있어. \n\n### Tool Management\n- `Gmail Agent` : Gmail 검색 및 메일 발송에 사용\n- `Galendar Agent` : 일정 관리에 사용\n- `Vectore Store` : 테슬라 관련 매뉴얼을 찾을 때 사용 \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        896
+      ],
+      "id": "6a768c3d-3419-44ea-9d8c-c3237eeb57fb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1168
+      ],
+      "id": "c943cf31-548e-4f28-b775-53cf4c6a4b59",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3w4gWmGJOxf5DF2f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Gmail에서 특정 기간의 이메일 리스트를 모두 반환하는 툴입니다. ",
+        "operation": "getAll",
+        "filters": {
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -592,
+        1376
+      ],
+      "id": "dfff6675-0e39-4825-9181-1d6594e2f015",
+      "name": "gmail_search",
+      "webhookId": "20cb80db-e599-47cf-a4bd-a6ce55dac9fc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Mkl1JIj0cS8kVuKk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "joosung80@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        1376
+      ],
+      "id": "28b1e166-0a2a-4083-b950-18d92d8c0c2d",
+      "name": "send_message",
+      "webhookId": "cc48cb40-b38e-474a-871b-38c3ce94c0f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Mkl1JIj0cS8kVuKk",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        96
+      ],
+      "id": "3935a832-d361-4b0e-af01-10b290efccb2",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1Zj7kTTe2dLwdJNPIo-HVZX3Dm8S6qYID",
+          "mode": "list",
+          "cachedResultName": "Owners_Manual.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1Zj7kTTe2dLwdJNPIo-HVZX3Dm8S6qYID/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -848,
+        96
+      ],
+      "id": "538bd8c6-2f4a-47ea-a4aa-88a0bfa86079",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Dv1taDm8pTxA53ie",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        304
+      ],
+      "id": "7d2047f7-dc65-46cc-b136-2b41d9323570",
+      "name": "Embeddings OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        304
+      ],
+      "id": "9e2f86a4-0c68-4fe8-a7a5-7df0a2dbb4d3",
+      "name": "Default Data Loader2"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        512
+      ],
+      "id": "3f0087c2-5935-4d27-b210-f50ffd26ea7d",
+      "name": "Recursive Character Text Splitter2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        1344
+      ],
+      "id": "9e0fa7cf-1228-4156-a62b-1ea77f228a57",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        96
+      ],
+      "id": "392187e6-a5e6-4b57-a0c7-97a75f0180d6",
+      "name": "Save to Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 테슬라 메뉴얼 적재",
+        "height": 704,
+        "width": 1200,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        -16
+      ],
+      "id": "f532181f-9e09-407f-9098-6011180c790e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Agent 벡터 검색",
+        "height": 752,
+        "width": 1168,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        832
+      ],
+      "id": "e568af4f-9ec8-4bd1-a5f2-40ec0a13002d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "테슬라 매뉴얼을 찾을때 쓰는 Vectore Store",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        1168
+      ],
+      "id": "75f12678-79fe-4cb4-971f-366013ab40ad",
+      "name": "Loading Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        1088
+      ],
+      "id": "fe2c1347-1e48-48f2-a406-0858035e09c9",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Gmail 메일 검색, 메일 발송 기능을 담담하는 Agent",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=당신은 Gmail 비서로써 메일 검색, 메일 발송 기능을 담담합니다.\n하기 tool을 사용하여 실제 Action 을 취해주세요 \n\n### Tool List\n- `gmail_search` : 기간(EX 2025/10/01~2025/10/8) 에 해당하는 메일의 타이틀을 조회하는 목적\n- `send_message` : 이메일을 보내는 툴\n\n오늘 날짜는 {{ $now.format(\"yyyy-MM-dd\") }} 입니다. \n\n### gmail search\n- tool 의 gmail_search를 통해 가지고 온 타이틀 중에 키워드 관련된 항목만 필터링을 하여 보여주세요 \n```\n[\n   \"title1\",\n   \"title2\"\n]\n```\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        1168
+      ],
+      "id": "5aa52690-7b54-4fbf-828f-d48f942ebb37",
+      "name": "Gmail Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        1424
+      ],
+      "id": "82670c5d-8e7d-41e6-a262-2b08396b49a8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "### 1. Vector 데이터 저장 워크플로우\n* **소스 데이터**: Google Drive에 업로드된 테슬라 매뉴얼 PDF 등을 활용합니다.\n* **Embedding**: **OpenAI Embedding**을 사용하여 문서를 벡터화합니다.\n    * `dimensions size`는 **1536**으로 설정하여 Supabase document 테이블과 일치시킵니다.\n* **Default Data Loader**:\n    * `Text splitter`: **Custom** 선택.\n    * **Recursive Character Text Splitter**: 문맥을 가장 잘 보존하며 텍스트를 효율적으로 분할하는 데 가장 많이 사용됩니다.\n    * **Chunk Overlap**: **200**과 같이 적절한 크기를 설정하여 문맥 보존을 돕습니다.\n* **Vector Store 선택**:\n    * **Simple Vector Store**: 인스턴스 재부팅 시 데이터가 사라집니다.\n    * **Supabase Vector Store**: **Langchain Template**으로 `document` 테이블을 생성하고, Simple Vector Store 대신 사용하여 영구적인 벡터 데이터 저장을 구현합니다.\n\n### 2. RAG Agent 구현\n* **AI Agent에 Tool 등록**: 구축한 **Supabase Vector Store**를 Agent의 Tool 목록에 추가합니다 (Tool 이름: `Vectore Store`).\n* **Agent Prompt**: Agent의 시스템 메시지에 `Vectore Store`를 포함하여, 테슬라 관련 매뉴얼 검색 시 해당 Tool을 사용하도록 지시합니다.\n    * Agent는 사용자의 질의에 따라 `Gmail Agent`, `Galendar Agent` 또는 `Vectore Store` 중 적절한 Tool을 선택하게 됩니다.\n",
+        "height": 608,
+        "width": 544,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1840,
+        -16
+      ],
+      "id": "7682741d-3548-46ae-97bd-ee031245069f",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gmail Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_message": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Save to Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Save to Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Save to Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter2": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader2",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Loading Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loading Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Gmail Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ca4b3ed8-c797-4d72-bfd5-bc8c25bac3bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "R5R7cv7ONDfRbFTc",
+  "tags": []
+}

@@ -1,0 +1,18 @@
+### 1단계 웹훅 테스트 - 캠페인 승인
+POST https://elanvital.ngrok.app/webhook-test/2423e7c5-3749-41e2-b34b-c3501935729d
+Content-Type: application/json
+User-Agent: Dart/3.9 (dart:io)
+
+{
+  "campaign_id": "f9a2ec48-4bb6-4215-aa2e-cc079ce9e7f3"
+}
+
+### 2단계 웹훅 테스트 - 제안서 승인 
+POST https://elanvital.ngrok.app/webhook-test/0b683688-ddc3-4140-9498-01f6d7ab2f7d
+Content-Type: application/json
+User-Agent: Dart/3.9 (dart:io)
+
+{
+  "campaign_id": "f9a2ec48-4bb6-4215-aa2e-cc079ce9e7f3"
+}
+

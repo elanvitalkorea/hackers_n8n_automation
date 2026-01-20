@@ -1,0 +1,657 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  globals.css
+  layout.tsx
+  page.tsx
+components/
+  TodoForm.tsx
+  TodoItem.tsx
+lib/
+  storage.ts
+.amplifyignore
+.gitignore
+amplify.yml
+next.config.js
+package.json
+postcss.config.js
+README.md
+tailwind.config.js
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/globals.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+</file>
+
+<file path="app/layout.tsx">
+import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'Todo App - Glassmorphism',
+  description: 'A beautiful todo app with iPhone glassmorphism design',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="ko">
+      <body>{children}</body>
+    </html>
+  )
+}
+</file>
+
+<file path="components/TodoForm.tsx">
+'use client'
+
+import { useState, FormEvent } from 'react'
+
+interface TodoFormProps {
+  onAdd: (text: string) => void
+}
+
+export default function TodoForm({ onAdd }: TodoFormProps) {
+  const [text, setText] = useState('')
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (text.trim()) {
+      onAdd(text.trim())
+      setText('')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full mb-6">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="할 일을 입력하세요..."
+          className="flex-1 px-4 py-3 rounded-2xl glass text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+        />
+        <button
+          type="submit"
+          className="px-6 py-3 rounded-2xl glass text-white font-semibold hover:bg-white/30 transition-all active:scale-95"
+        >
+          추가
+        </button>
+      </div>
+    </form>
+  )
+}
+</file>
+
+<file path="components/TodoItem.tsx">
+'use client'
+
+import { Todo } from '@/lib/storage'
+
+interface TodoItemProps {
+  todo: Todo
+  onToggle: (id: string) => void
+  onDelete: (id: string) => void
+}
+
+export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+  return (
+    <div className="flex items-center gap-3 p-4 rounded-2xl glass mb-3 group hover:bg-white/30 transition-all">
+      <button
+        onClick={() => onToggle(todo.id)}
+        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all ${
+          todo.completed
+            ? 'bg-white/30 border-white/50'
+            : 'border-white/50 hover:border-white/70'
+        }`}
+      >
+        {todo.completed && (
+          <svg
+            className="w-full h-full text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        )}
+      </button>
+      
+      <span
+        className={`flex-1 text-white ${
+          todo.completed
+            ? 'line-through opacity-60'
+            : ''
+        }`}
+      >
+        {todo.text}
+      </span>
+      
+      <button
+        onClick={() => onDelete(todo.id)}
+        className="flex-shrink-0 w-8 h-8 rounded-full glass hover:bg-red-500/30 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
+      >
+        <svg
+          className="w-4 h-4 text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+  )
+}
+</file>
+
+<file path="lib/storage.ts">
+export interface Todo {
+  id: string
+  text: string
+  completed: boolean
+  createdAt: number
+}
+
+const STORAGE_KEY = 'todos'
+
+export const getTodos = (): Todo[] => {
+  if (typeof window === 'undefined') return []
+  
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Failed to load todos from localStorage:', error)
+    return []
+  }
+}
+
+export const saveTodos = (todos: Todo[]): void => {
+  if (typeof window === 'undefined') return
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+  } catch (error) {
+    console.error('Failed to save todos to localStorage:', error)
+  }
+}
+
+export const addTodo = (text: string): Todo => {
+  const newTodo: Todo = {
+    id: Date.now().toString(),
+    text,
+    completed: false,
+    createdAt: Date.now(),
+  }
+  
+  const todos = getTodos()
+  todos.push(newTodo)
+  saveTodos(todos)
+  
+  return newTodo
+}
+
+export const toggleTodo = (id: string): void => {
+  const todos = getTodos()
+  const todo = todos.find(t => t.id === id)
+  if (todo) {
+    todo.completed = !todo.completed
+    saveTodos(todos)
+  }
+}
+
+export const deleteTodo = (id: string): void => {
+  const todos = getTodos()
+  const filtered = todos.filter(t => t.id !== id)
+  saveTodos(filtered)
+}
+</file>
+
+<file path=".amplifyignore">
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.md
+!README.md
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="amplify.yml">
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
+</file>
+
+<file path="next.config.js">
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+}
+
+module.exports = nextConfig
+</file>
+
+<file path="package.json">
+{
+  "name": "test-todo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "next": "^14.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.4"
+  }
+}
+</file>
+
+<file path="postcss.config.js">
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+</file>
+
+<file path="README.md">
+# Todo App - Glassmorphism Design
+
+아이폰 글래스모피즘 스타일을 적용한 Next.js Todo 웹 애플리케이션입니다.
+
+## 기능
+
+- ✅ Todo 항목 추가
+- ✅ Todo 항목 완료/미완료 토글
+- ✅ Todo 항목 삭제
+- 💾 로컬 스토리지에 자동 저장
+
+## 기술 스택
+
+- Next.js 14+ (App Router)
+- TypeScript
+- Tailwind CSS
+- 로컬 스토리지
+
+## 시작하기
+
+### 설치
+
+```bash
+npm install
+```
+
+### 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인하세요.
+
+### 빌드
+
+```bash
+npm run build
+```
+
+### 프로덕션 실행
+
+```bash
+npm start
+```
+
+## 디자인
+
+아이폰 글래스모피즘 디자인을 적용했습니다:
+
+- 반투명 배경 (`backdrop-blur`)
+- 부드러운 그림자 효과
+- 애니메이션 그라데이션 배경
+- 둥근 모서리
+- 미묘한 테두리
+
+## 배포
+
+이 프로젝트는 Vercel, Netlify 등 다양한 플랫폼에 배포할 수 있습니다.
+
+### Vercel 배포
+
+1. [Vercel](https://vercel.com)에 프로젝트를 연결
+2. 자동으로 빌드 및 배포됩니다
+</file>
+
+<file path="tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+      },
+    },
+  },
+  plugins: [],
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="app/page.tsx">
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Todo, getTodos, addTodo, toggleTodo, deleteTodo } from '@/lib/storage'
+import TodoForm from '@/components/TodoForm'
+import TodoItem from '@/components/TodoItem'
+
+export default function Home() {
+  const [todos, setTodos] = useState<Todo[]>([])
+
+  useEffect(() => {
+    setTodos(getTodos())
+  }, [])
+
+  const handleAdd = (text: string) => {
+    addTodo(text)
+    setTodos(getTodos())
+  }
+
+  const handleToggle = (id: string) => {
+    toggleTodo(id)
+    setTodos(getTodos())
+  }
+
+  const handleDelete = (id: string) => {
+    deleteTodo(id)
+    setTodos(getTodos())
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="glass rounded-3xl p-8 shadow-2xl">
+          <h1 className="text-3xl font-bold text-white mb-8 text-center">
+            할일 목록 관리
+          </h1>
+          
+          <TodoForm onAdd={handleAdd} />
+          
+          <div className="max-h-[60vh] overflow-y-auto">
+            {todos.length === 0 ? (
+              <div className="text-center py-8 text-white/70">
+                <p>할 일이 없습니다.</p>
+                <p className="text-sm mt-2">새로운 할 일을 추가해보세요!</p>
+              </div>
+            ) : (
+              todos.map((todo) => (
+                <TodoItem
+                  key={todo.id}
+                  todo={todo}
+                  onToggle={handleToggle}
+                  onDelete={handleDelete}
+                />
+              ))
+            )}
+          </div>
+          
+          {todos.length > 0 && (
+            <div className="mt-6 text-center text-white/60 text-sm">
+              총 {todos.length}개의 할 일
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  )
+}
+</file>
+
+</files>

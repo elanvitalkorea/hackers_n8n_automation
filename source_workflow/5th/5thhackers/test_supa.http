@@ -1,0 +1,36 @@
+
+### 1. 회원가입 (Supabase Auth 사용)
+POST http://localhost:3000/api/auth/signup
+Content-Type: application/json
+
+{
+    "email": "joosung80@naver.com",
+    "password": "strong-password-123"
+}
+
+### 2. 로그인 및 토큰 발급
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "joosung80@naver.com",    
+    "password": "strong-password-123"
+}
+
+### 3. 발급받은 토큰 변수에 저장
+@authToken = {{login.response.body.accessToken}}
+
+### 4. 인증 토큰을 사용하여 할 일 생성하기
+# 이제부터 Authorization 헤더에 토큰을 담아 요청합니다.
+POST http://localhost:3000/api/todos
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "인증된 사용자의 첫 할 일"
+}
+
+### 5. 인증 토큰을 사용하여 모든 할 일 조회
+GET http://localhost:3000/api/todos
+Authorization: Bearer {{authToken}}

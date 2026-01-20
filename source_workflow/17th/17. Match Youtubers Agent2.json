@@ -1,0 +1,785 @@
+{
+  "name": "Match Youtubers Agent2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.campaign_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c4b73064-9953-4025-bc32-632559d1195b",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "56b17f82-87b5-4020-b043-5f730d2c210e",
+              "leftValue": "={{ $items.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "0191fdd3-d144-4350-b2de-bc0d5cba7ccc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b920859e-6d99-48bf-90c9-96529b9c9c5a",
+              "name": "candidate_ids",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "734f41ca-4d13-4f85-bb79-799b5953db4b",
+              "name": "query_text",
+              "value": "={{ $('Get a row').item.json.ai_analysis.summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "afaf4d9a-4f1c-4d44-8887-5b9cb27480da",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "bd82951f-7c69-4838-bfa1-d11416cfe0cb",
+      "name": "Aggregate id"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wdbqdtqwctavmtklfvxm.supabase.co/rest/v1/rpc/match_documents_by_ids",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query_embedding\": \"[{{ $json.data[0].embedding }}]\",\n  \"match_count\": 2,\n  \"filter_ids\": {{ $('Edit Fields').item.json.candidate_ids }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        288
+      ],
+      "id": "51cf80ac-6707-4af0-90aa-bd46fe831c2a",
+      "name": "supabase documents match",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.query_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        288
+      ],
+      "id": "64a19789-2e68-469f-9436-a55b9e36ec21",
+      "name": "openai embedding",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "643d432f-ae42-4825-8b98-3781c2c0f51b",
+              "leftValue": "={{ $items.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        288
+      ],
+      "id": "00d8f0c4-50df-45bc-959e-a03a5ec1e333",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0f4f5612-a45a-4631-ba29-474b99f08cb3",
+              "name": "channel_name",
+              "value": "={{ $json.channel_name }}",
+              "type": "string"
+            },
+            {
+              "id": "b0cf2b75-7858-48bf-88fc-0dba9af0c7b1",
+              "name": "content",
+              "value": "={{ $('If1').item.json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "163b745a-2139-48df-af5c-5035a42b7ba8",
+              "name": "cost_per_video_usd",
+              "value": "={{ $json.cost_per_video_usd }}",
+              "type": "string"
+            },
+            {
+              "id": "53d39ded-1c99-4d98-a1ba-6c14c4888b3e",
+              "name": "avg_cpm",
+              "value": "={{ $json.avg_cpm }}",
+              "type": "string"
+            },
+            {
+              "id": "05a8680b-5717-4b8a-aa87-a05b7411fc81",
+              "name": "avg_ctr_percent",
+              "value": "={{ $json.avg_ctr_percent }}",
+              "type": "string"
+            },
+            {
+              "id": "5c6fbfb9-0dde-40b4-bfa7-93022c27b778",
+              "name": "target_cpm",
+              "value": "={{ $('Get a row').item.json.ai_analysis.targetCPM }}",
+              "type": "string"
+            },
+            {
+              "id": "77c431c9-df30-440b-84cf-4764d66b68c3",
+              "name": "target_ctr",
+              "value": "={{ $('Get a row').item.json.ai_analysis.targetCTR }}",
+              "type": "string"
+            },
+            {
+              "id": "57af1115-a94a-4ab1-a57f-b0f6f234a117",
+              "name": "similarity",
+              "value": "={{ $('supabase documents match').item.json.similarity }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        576
+      ],
+      "id": "0e7287f8-f76d-4b39-b5dc-e9a31ae0398c",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2423e7c5-3749-41e2-b34b-c3501935729d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4df6ba4f-03cb-4bd3-9c6b-2311df93b242",
+      "name": "Webhook",
+      "webhookId": "2423e7c5-3749-41e2-b34b-c3501935729d"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"channel_name\": \"Elanvital AI\",\n  \"content_summary\": \"AI, n8n, 업무 자동화 전문가로, 캠페인 의도와 일치함.\",\n  \"cost_per_video_usd\": 5000,\n  \"avg_cpm\": 15000,\n  \"avg_ctr_percent\": 3.5,\n  \"similarity\": 0.8215,\n  \"reason\": \"캠페인의 'AI를 활용한 업무 자동화 툴 리뷰' 의도와 100% 일치하며(유사도: 0.822), 목표 CPM(20000) 및 CTR(3.0)을 완벽히 만족합니다.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        784
+      ],
+      "id": "ec7669b4-f651-4307-9ea1-ee512cf56015",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        784
+      ],
+      "id": "16a976df-1204-4613-b3f8-02de4ca575b0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        800,
+        576
+      ],
+      "id": "93867264-4bd0-4408-8a85-f8dcd37680cc",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**SYSTEM**\n너는 최고 수준의 광고 캠페인 전략가다. AI가 분석한 유튜버 후보 리스트(`[AI 분석 후보 리스트]`)와 캠페인 원본 정보(`[광고주 캠페인 정보]`, `[캠페인 목표]`)를 바탕으로, 관리자에게 제출할 **매우 상세하고 풍부한 '종합 협업 제안서'** 를 작성해야 한다.\n\n응답은 **반드시** 지정된 JSON 형식으로만 출력해야 한다.\n\n**USER**\n**[캠페인 목표]**\n\n  * **총 예산 (USD):**. {{ $('Get a row').item.json.ai_analysis.budgetUSD }}\n  * **목표 CPM:**  {{ $('Get a row').item.json.ai_analysis.targetCPM }}\n  * **목표 CTR:**  {{ $('Get a row').item.json.ai_analysis.targetCTR }}\n\n**[광고주 캠페인 정보]**\n\n  - **회사명:** {{ $('Get a row').item.json.ai_analysis.companyName }}\n  - **제품명:** {{ $('Get a row').item.json.ai_analysis.productName }}\n\n**[AI 분석 후보 리스트 (JSON 배열)]**\n\n```json\n{{ JSON.stringify($json.output,null, 2) }}\n```\n\n-----\n\n**[Task]**\n\n**1. 최적 후보 1인 선정 (및 데이터 수정)**\n\n * `[AI 분석 후보 리스트]`와 `[캠페인 목표]`를 비교 분석하여, 모든 지표(예산, 성과, 유사도)를 고려한 **최적의 후보 1명**을 선정한다.\n\n * 선정된 1명의 JSON 객체를 `winner_json` 값으로 사용하되, **다음 [데이터 수정 규칙]을 반드시 적용한다.**\n\n * **[데이터 수정 규칙]**\n\n   1.  **`original_cost_per_video_usd`**: 유튜버의 **원본 단가**(원본 `cost_per_video_usd` 값)를 이 **새 필드**에 복사한다.\n   2.  **`cost_per_video_usd`**: 이 필드의 값을 `[캠페인 목표]`의 **'총 예산 (USD)'** 값으로 덮어쓴다. (이것이 Flutter 앱에 표시될 **'집행 예산'** 이 된다.)\n\n **2. '종합 제안서' (Markdown) 생성**\n\n   * **(중요)** 아래 명시된 **'종합 보고서 양식'** 을 **반드시** 준수하여 `proposal_markdown` 값을 생성한다.\n   * 모든 정보는 `[광고주 캠페인 정보]`, `[캠페인 목표]`, `[AI 분석 후보 리스트]`에서 가져와야 한다.\n\n\n**[종합 보고서 양식]**\n\n```markdown\n# 유튜버 협업 제안서\n[회사명] – *[제품명] 런칭 캠페인*\n\n## 1\\. 제안 개요\n\n본 제안서는 [회사명]의 신규 [제품명] 초기 인지도 확보를 목표로, 데이터 기반으로 정성적 적합도, 정량 성과 지표, AI 콘텐츠 유사도를 종합 평가하여 최적의 유튜버를 추천합니다.\n \n## 2\\. 예산 요약 (USD)\n \n  - 총 예산: [캠페인 목표의 총 예산]\n  - **권장 집행안 (최종 선정)**\n      - [winner\\_json의 channel\\_name]: **[캠페인 목표의 총 예산 (USD)]** \n      - 잔여 예산: **0**\n\n## 3\\. (중요) 후보 상세 분석\n \n(AI 분석 후보 리스트의 **모든 후보**를 여기에 상세히 기술한다. 후보가 1명이면 1명만 기술한다.)\n \n### 3.1 [후보 1의 channel\\_name]\n\n**비용: [후보 1의 cost\\_per\\_video\\_usd] USD**\n**평균 CPM: [후보 1의 avg\\_cpm]**\n**평균 CTR: [후보 1의 avg\\_ctr\\_percent]%**\n**콘텐츠 유사도: [후보 1의 similarity]**\n \n#### 추천 이유\n\n[후보 1의 `reason` 필드 내용을 여기에 그대로 삽입한다. 이 'reason'에는 8-2 노드에서 생성된 정성/정량/유사도 근거가 이미 포함되어 있어야 한다.]\n \n### 3.2 [후보 2의 channel\\_name]\n\n(후보 2가 있다면 동일하게 작성)\n-----\n\n \n## 4\\. 최종 추천 전략 및 사유\n \n`(후보가 2명 이상일 경우에만 이 섹션을 작성한다. 1명일 경우 생략)`\n\n`[AI 분석 후보 리스트]를 바탕으로 'winner_json'이 다른 후보 대비 **'종합 성과 (성과 지표, 콘텐츠 유사도, 원본 단가 기반 효율성 등)'** 측면에서 왜 더 우수한지 비교 분석한다.`\n\n`**(중요)** 최종 결론으로, **'가장 우수한 1인'** 에게 **'총 예산 ({{ $('Get a row').item.json.ai_analysis.budgetUSD }} USD)'** 을 모두 집행하여, 예산을 분산하는 것보다 더 큰 캠페인 효과(Maximizing Impact)를 기대하는 전략임을 명시한다.`\n\n`(예: Level99은 원본 단가(6.5k) 대비 성과 지표(CTR 2.29%, 유사도 0.34)가 Boss03(14.5k, 2.09%, 0.258) 대비 월등히 우수합니다. 따라서 가장 적합한 Level99에게 총 예산 15,000 USD를 모두 배정하여 캠페인 성과를 극대화하는 것을 제안합니다.)`\n \n## 5\\. 결론\n \n상기 분석(콘텐츠 적합도, 성과 지표, AI 유사도)을 바탕으로, [제품명] 캠페인의 초기 성과 확보에 **[winner\\_json의 channel\\_name]** 이(가) 가장 적합하다고 판단하여 최종 추천합니다.\n```\n \n**3. 최종 응답 (Structured Output)**\n \n  * **[중요]** 다른 말은 절대 하지 말고, **반드시** 아래 형식의 **JSON 객체** 1개만 반환하라.\n   \n```json\n{\n  \"winner_json\": {\n    \"channel_name\": \"Level99 게임\",\n    \"content_summary\": \"신작 게임 리뷰, 고난이도 공략 전문 채널.\",\n    \"original_cost_per_video_usd\": 6500,\n    \"cost_per_video_usd\": 15000,\n    \"avg_cpm\": 20630,\n    \"avg_ctr_percent\": 2.29,\n    \"similarity\": 0.34,\n    \"reason\": \"신작 게임 소개 및 FPS 실전 팁 중심...(8-2 노드에서 생성된 상세 사유)...(유사도: 0.340) ... 효율적.\"\n  },\n  \"proposal_markdown\": \"# 유튜버 협업 제안서\\n플레이어스튜디오 – *모바일 RPG ‘드래곤식스’ 런칭 캠페인*\\n\\n---\\n\\n## 1. 제안 개요\\n...\\n\\n## 2. 예산 요약 (USD)\\n\\n- 총 예산: 15000\\n- 권장 집행안 (최종 선정)\\n  - Level99 게임: 6500\\n  - 잔여 예산: 8500\\n\\n---\\n\\n## 3. 후보 상세 분석\\n\\n### 3.1 Level99 게임\\n**비용: 6500 USD**\\n...\\n#### 추천 이유\\n신작 게임 소개 및 FPS 실전 팁 중심...(8-2 노드에서 생성된 상세 사유)...\\n\\n### 3.2 Boss03 게임\\n**비용: 14500 USD**\\n...\\n#### 추천 이유\\ne스포츠 및 신작 공략 분석 중심...(8-8 노드에서 생성된 상세 사유)...\\n\\n---\\n\\n## 4. 최종 추천 전략 및 사유\\n\\nBoss03 게임 대비 Level99 게임이 예산 효율성($6,500 vs $14,500)과 CTR(2.29% vs 2.09%)에서 우수하여 최종 선정했습니다.\\n\\n## 5. 결론\\n...\\n\"\n}\n```",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "너는 유튜버 광고 매칭 플랫폼의 AI 에이전트다. 각 유튜버의 원본 소개글과 캠페인 정보를 바탕으로, 요약(`content_summary`)과 선정 사유(`reason`)를 생성해야 한다."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        576
+      ],
+      "id": "3d8a94b6-ea0d-4953-9658-0adf46de53f6",
+      "name": "Agent 2 Proposal"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.1-chat-latest",
+          "mode": "list",
+          "cachedResultName": "gpt-5.1-chat-latest"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1008,
+        800
+      ],
+      "id": "d22d9604-55f0-4bfb-a49d-e85dc9453e2e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=**[유튜버 정보 및 캠페인 목표]**\n\n```json\n{{ JSON.stringify($json,null,2) }}\n```\n\n**[Task]**\n위의 유튜버에 대해:\n\n1.  `content_summary`: 원본 소개글(`content`)을 1-2문장으로 요약하여 핵심 특징을 간결하게 표현\n2.  `reason`: 다음 **세 가지**를 모두 포함한 선정 사유를 생성:\n     * **정성적(의미) 부합**: 캠페인 의도와 유튜버 채널의 특성이 어떻게 일치하는지\n     * **정량적(성과) 근거**: 목표 CPM(`target_cpm`) 및 CTR(`target_ctr`) 대비 유튜버의 성과 지표(`avg_cpm`, `avg_ctr_percent`)가 어떻게 만족하는지\n     * **(중요) 정성적(유사도) 점수**: RAG 검색의 `similarity` 점수를 소수점 셋째 자리까지 반올림하여 \"(유사도: X.XXX)\" 형식으로 `reason` 텍스트에 포함.\n\n당신의 최종 응답은 반드시 다음 JSON 형식으로만 출력하세요. 다른 텍스트, 설명, 코드 블록(```)은 절대 포함하지 마세요. JSON 배열에, 오브젝트 갯수를 입력에 맞춰서 반환하세요.\n\n**[중요]** 응답은 반드시 다음 JSON 형식이어야 하며, 다른 말은 하지 마.\n```json\n{\n  \"channel_name\": \"Elanvital AI\",\n  \"content_summary\": \"AI, n8n, 업무 자동화 전문가로, 캠페인 의도와 일치함.\",\n  \"cost_per_video_usd\": 5000,\n  \"avg_cpm\": 15000,\n  \"avg_ctr_percent\": 3.5,\n  \"similarity\": 0.8215,\n  \"reason\": \"캠페인의 'AI를 활용한 업무 자동화 툴 리뷰' 의도와 100% 일치하며(유사도: 0.822), 목표 CPM(20000) 및 CTR(3.0)을 완벽히 만족합니다.\"\n}\n```",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "너는 유튜버 광고 매칭 플랫폼의 AI 에이전트다. 각 유튜버의 원본 소개글과 캠페인 정보를 바탕으로, 요약(`content_summary`)과 선정 사유(`reason`)를 생성해야 한다."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        576
+      ],
+      "id": "bedf11e5-0190-41a0-99aa-6836b5e14896",
+      "name": "AI Agent2 Summary & Reason"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get a row').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "pending_proposal_approval"
+            },
+            {
+              "fieldId": "generated_proposal",
+              "fieldValue": "={{ $json.output.proposal_markdown }}"
+            },
+            {
+              "fieldId": "matched_youtubers",
+              "fieldValue": "={{ $json.output.winner_json }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        576
+      ],
+      "id": "ebaeb5ca-de76-480c-a250-fe82d79f94c7",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"winner_json\": {\n    \"channel_name\": \"Level99 게임\",\n    \"content_summary\": \"신작 게임 리뷰, 고난이도 공략 전문 채널.\",\n    \"original_cost_per_video_usd\": 6500,\n    \"cost_per_video_usd\": 15000,\n    \"avg_cpm\": 20630,\n    \"avg_ctr_percent\": 2.29,\n    \"similarity\": 0.34,\n    \"reason\": \"신작 게임 소개 및 FPS 실전 팁 중심...(8-2 노드에서 생성된 상세 사유)...(유사도: 0.340) ... 효율적.\"\n  },\n  \"proposal_markdown\": \"# 유튜버 협업 제안서\\n플레이어스튜디오 – *모바일 RPG ‘드래곤식스’ 런칭 캠페인*\\n\\n---\\n\\n## 1. 제안 개요\\n...\\n\\n## 2. 예산 요약 (USD)\\n\\n- 총 예산: 15000\\n- 권장 집행안 (최종 선정)\\n  - Level99 게임: 6500\\n  - 잔여 예산: 8500\\n\\n---\\n\\n## 3. 후보 상세 분석\\n\\n### 3.1 Level99 게임\\n**비용: 6500 USD**\\n...\\n#### 추천 이유\\n신작 게임 소개 및 FPS 실전 팁 중심...(8-2 노드에서 생성된 상세 사유)...\\n\\n### 3.2 Boss03 게임\\n**비용: 14500 USD**\\n...\\n#### 추천 이유\\ne스포츠 및 신작 공략 분석 중심...(8-8 노드에서 생성된 상세 사유)...\\n\\n---\\n\\n## 4. 최종 추천 전략 및 사유\\n\\nBoss03 게임 대비 Level99 게임이 예산 효율성($6,500 vs $14,500)과 CTR(2.29% vs 2.09%)에서 우수하여 최종 선정했습니다.\\n\\n## 5. 결론\\n...\\n\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        784
+      ],
+      "id": "9ec9d0c0-d6c5-40d4-93a3-d07d585b5205",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "youtubers",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "cost_per_video_usd",
+              "condition": "lte",
+              "keyValue": "={{ $json.ai_analysis.budgetUSD }}"
+            },
+            {
+              "keyName": "main_demographics",
+              "condition": "eq",
+              "keyValue": "={{ $json.ai_analysis.targetDemographics }}"
+            },
+            {
+              "keyName": "avg_cpm",
+              "condition": "lte",
+              "keyValue": "={{ $json.ai_analysis.targetCPM }}"
+            },
+            {
+              "keyName": "avg_ctr_percent",
+              "condition": "lte",
+              "keyValue": "={{ $json.ai_analysis.targetCTR }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3f04d1ff-368b-4e07-b2b2-c659537fd181",
+      "name": "Get candidate youtubers",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "youtubers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('supabase documents match').item.json.metadata.channel_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        272
+      ],
+      "id": "852059fb-d34d-446d-a5fb-84943e3a98a8",
+      "name": "Get Channel Detail Info",
+      "credentials": {
+        "supabaseApi": {
+          "id": "CgDN4U1s04H7DLTi",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1301607555",
+        "text": "=[{{ $json.ai_analysis.companyName }} - {{ $json.ai_analysis.productName }}]\n캠페인이 1차승인 되었습니다. 매칭된 유튜버는 하기와 같습니다.\n\n{{ \"```json\\n\" + JSON.stringify($json.matched_youtubers, null, 2) + \"\\n```\" }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        576
+      ],
+      "id": "f13d8a13-4bb7-4d3f-bdd2-d036d74336f5",
+      "name": "Send a text message",
+      "webhookId": "6f580d84-d02b-4c1f-b0ac-06ef39b07aea",
+      "credentials": {
+        "telegramApi": {
+          "id": "qWdebRRardNnIODB",
+          "name": "Telegram elantestbot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Get candidate youtubers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate id": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "openai embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "openai embedding": {
+      "main": [
+        [
+          {
+            "node": "supabase documents match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supabase documents match": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get Channel Detail Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2 Summary & Reason",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2 Summary & Reason",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2 Summary & Reason",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 Proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 2 Proposal",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2 Summary & Reason": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 Proposal": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agent 2 Proposal",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get candidate youtubers": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Channel Detail Info": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9216323f-b940-4786-b8d4-e6ad8b8c82fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "ezsPl0xxrJzrM6jE",
+  "tags": []
+}

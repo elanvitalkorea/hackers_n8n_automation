@@ -1,0 +1,161 @@
+{
+  "name": "survey_report",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "57b4e7e8-cf6e-48d2-a452-588ab45b5cc8",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "80b710cd-25f6-4a2e-8ec1-6624b0ed46eb",
+      "name": "Webhook",
+      "webhookId": "57b4e7e8-cf6e-48d2-a452-588ab45b5cc8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de2a3be7-8e25-427a-a65e-5e69f37d0c35",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "5376d917-2d5c-4338-9932-5331954176e2",
+              "name": "phone",
+              "value": "={{ $json.body.phone.replaceAll('-','') }}",
+              "type": "string"
+            },
+            {
+              "id": "1684c679-a046-4da4-b396-34430d22ef99",
+              "name": "nps_score",
+              "value": "={{ $json.body.nps_score }}",
+              "type": "number"
+            },
+            {
+              "id": "d98cc231-2a22-467c-9401-716da44b972f",
+              "name": "content",
+              "value": "={{ $json.body.name }}님 설문에 응해주셔서 감사합니다. \n감사의 의미로 다음 온라인 강의 런치시에 사용할 수 있는 20% 할인 쿠폰코드를 드립니다.\nN8NELAN20",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "f95a3cf9-de87-4ac8-af30-309ca70de058",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "1301607555",
+        "text": "=새로운 설문이 제출 되었습니다.\n\n{{ $('Edit Fields').item.json.name }} 님이 제출해주셨으며 현재 NPS Score는 {{ $('Edit Fields').item.json.nps_score }} 입니다.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "6565a16d-453c-499c-a8b1-1336dfce9fa3",
+      "name": "Send a text message",
+      "webhookId": "476044a8-c92a-4f64-ab1b-355c45badbc8",
+      "credentials": {
+        "telegramApi": {
+          "id": "qWdebRRardNnIODB",
+          "name": "Telegram elantestbot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.solapi.com/messages/v4/send-many/detail",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"to\": \"{{ $json.phone }}\",\n      \"from\": \"01095300542\",\n      \"text\": \"{{ $json.content.replace(/\\n/g, \"\\\\n\") }}\"\n    }\n   ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "73777b1e-e017-4de3-8d10-555c6bca09fd",
+      "name": "Solapi 문자 보내기",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "bIhnUMJrI7lWDRsK",
+          "name": "Solapi Oauth"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Solapi 문자 보내기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solapi 문자 보내기": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bc783e4f-1ef9-4f38-b0bb-64abf8c03137",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "1ifmHlCTK43KpvFJ",
+  "tags": []
+}

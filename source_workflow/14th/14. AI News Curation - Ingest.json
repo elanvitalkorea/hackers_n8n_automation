@@ -1,0 +1,978 @@
+{
+  "name": "AI News Curation - Ingest",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Every Day 9AM",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -2896,
+        128
+      ],
+      "id": "7dd32086-a28c-47a6-944a-2b12f3b33c73"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "912f3834-b1b0-4dc0-9277-de396d72d006",
+              "name": "rss",
+              "value": "=[ \"https://techcrunch.com/feed/\", \"https://www.engadget.com/rss.xml\", \"https://www.wired.com/feed/rss\", \"https://www.theverge.com/rss/index.xml\" ]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2576,
+        128
+      ],
+      "id": "01fff21a-33df-47d0-90cd-b931279702ee",
+      "name": "Define RSS Feeds"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2352,
+        128
+      ],
+      "id": "62666680-4d87-414d-8ccc-71b11dc590b0",
+      "name": "Split Feeds"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.rss }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        128
+      ],
+      "id": "d7a7f54e-e18e-43d8-9301-df79497b094b",
+      "name": "Read RSS Feed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message.content.grade }}",
+              "value2": "High"
+            }
+          ]
+        }
+      },
+      "id": "5a192d22-593f-4b6a-b186-f6310b2c3ab0",
+      "name": "Is High?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Create news record').item.json.content.length < 300 }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "a39bcf48-beaf-49cd-9c86-fe0a2df06b7d",
+      "name": "Need Crawl?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rss = $('Create news record').first().json.content || '';\nconst crawled = $input.first().json?.data?.markdown || '';\nconst final = crawled ? crawled : rss;\nconst contentType = crawled ? 'firecrawl' : 'rss'\nreturn [{ json: {  contents: final, contentType  } }];"
+      },
+      "id": "15e5d70a-bc66-4a1f-9382-6d5a0cf826f1",
+      "name": "Merge Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2416,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "link",
+              "keyValue": "={{ $json.link }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2752,
+        400
+      ],
+      "id": "8963d8a5-f8e1-4a87-9bd4-04aaaeeaced4",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3264,
+        384
+      ],
+      "id": "773a028c-7918-49e6-851a-6cbc232c57d4",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n  const d = $input.first().json;\n\n  // 1. 필수 필드 추출 (표준 RSS + Atom 지원)\n  let title = '';\n  let link = '';\n  let summary = '';\n  let published = '';\n  let rss_content = '';\n  let source = 'unknown';\n\n  if (d.title && typeof d.title === 'string') {\n    title = d.title;\n    link = d.link || '';\n    summary = d.contentSnippet || d.description || d.summary || '';\n    published = d.isoDate || d.pubDate || '';\n    rss_content = d.content || d['content:encoded'] || '';\n  }\n  // Wired 등 Atom 기반 RSS\n  else if (d.title && d.title._) {\n    title = d.title._ || '';\n    link = d.link && d.link['@href'] ? d.link['@href'] : '';\n    summary = d.summary && d.summary._ ? d.summary._ : '';\n    published = d.published || d.updated || '';\n    rss_content = d.content && d.content._ ? d.content._ : '';\n  }\n\n  const lowerLink = link.toLowerCase();\n  if (lowerLink.includes('techcrunch')) source = 'techcrunch';\n  else if (lowerLink.includes('engadget')) source = 'engadget';\n  else if (lowerLink.includes('wired')) source = 'wired';\n  else if (lowerLink.includes('theverge')) source = 'theverge';\n\n  return {\n    json: {\n      title: title.trim(),\n      link,\n      summary: summary.trim().slice(0, 1000), // 너무 길면 자름\n      published_at: published,\n      rss_content: rss_content.trim(),\n      source: source\n    }\n  }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2992,
+        400
+      ],
+      "id": "b9ac563d-96d3-489c-91b3-006896d3deb8",
+      "name": "Universal Parser",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bb7d2fe5-d569-48d2-80cf-f3d073887cff",
+              "leftValue": "={{ $json.isNotEmpty() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        400
+      ],
+      "id": "6abb7000-9bee-4e2b-a84c-92b6c1ed4558",
+      "name": "DataIsExist"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set evaluating').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "relevance_grade",
+              "fieldValue": "={{ $('Evaluating').item.json.message.content.grade }}"
+            },
+            {
+              "fieldId": "alignment_reason",
+              "fieldValue": "={{ $('Evaluating').item.json.message.content.reason }}"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $('cleansing article').item.json.contents }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "stored"
+            },
+            {
+              "fieldId": "summary",
+              "fieldValue": "={{ $('Summary & Tagging').item.json.message.content.summary }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2560,
+        1152
+      ],
+      "id": "1c271976-1616-4dcc-b73a-56b85d8fc8ae",
+      "name": "Update embedding",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "articles",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "link",
+              "fieldValue": "={{ $('Universal Parser').item.json.link }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $('Universal Parser').item.json.title }}"
+            },
+            {
+              "fieldId": "published_at",
+              "fieldValue": "={{ $('Universal Parser').item.json.published_at }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "pending"
+            },
+            {
+              "fieldId": "summary",
+              "fieldValue": "={{ $('Universal Parser').item.json.summary }}"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $('Universal Parser').item.json.rss_content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2272,
+        416
+      ],
+      "id": "cefb83b2-a4ed-4816-a800-30536cdffcea",
+      "name": "Create news record",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "evaluating"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        416
+      ],
+      "id": "570e3bb0-e128-42e6-9874-2ec5cb0bb9ae",
+      "name": "Set evaluating",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/scrape",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $('Create news record').item.json.link }}\",\n  \"formats\": [\n    {\n      \"type\": \"markdown\",\n      \"prompt\": \"이 기사에서 전체 본문 내용(content)을 추출해서 알려줘.\"\n    }\n  ],\n  \"excludeTags\": [\"a\", \"img\", \"pre\", \"code\", \"script\", \"nav\", \"footer\"]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2688,
+        832
+      ],
+      "id": "eb5a5e56-8f66-471a-b509-8f3c04cb8405",
+      "name": "Extract Data by Firecrawl",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "vZ69BjiDEy2q4BKq",
+          "name": "Firecrawl API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=당신은 AI 기술 전문가이자 유료 뉴스레터 크리에이터입니다.\n\n### Goal\n\"AI 기술(Agent, RAG)을 활용해 다방면의 정보에 '인사이트'를 부여하는 가치 있는 작업을 통해 유료 뉴스레터와 AI 사업을 성공시키고, 궁극적으로 '경제적 자유'를 달성하는 것\"\n\n### 페르소나\n1. AI 기술 전문가\n2. 콘텐츠 크리에이터\n3. 비즈니스 빌더\n4. 인사이트 제공자\n5. 경제적 자유 추구자\n\n---\n\n### 기사\n제목: {{ $('Universal Parser').item.json.title }}\n요약: {{ $json.contents }}\n---\n\n### 평가 기준\n1. AI Agent, RAG, LLM 기술 진보\n2. AI 사업 아이디어 도출\n3. 수익화 가능성\n\n---\n\n### 출력 (JSON)\n{\n  \"grade\": \"High|Medium|Low\",\n  \"reason\": \"이 기사는 [내용]을 다루며, [목표와의 연관성]\"\n}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1728,
+        416
+      ],
+      "id": "df665dca-08de-457e-9a16-9da75ac2ef27",
+      "name": "Evaluating",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=당신은 요약 전문가입니다.\n\n### Goal\n\"AI 기술(Agent, RAG)을 활용해 다방면의 정보에 '인사이트'를 부여하는 가치 있는 작업을 통해 유료 뉴스레터와 AI 사업을 성공시키고, 궁극적으로 '경제적 자유'를 달성하는 것\"\n\n### 페르소나\n1. AI 기술 전문가 2. 콘텐츠 크리에이터 3. 비즈니스 빌더 4. 인사이트 제공자 5. 경제적 자유 추구자\n\n\n### 전문 (앞 5000자)\n{{ $json.contents ? $json.contents.slice(0,5000) : '' }}\n\n---\n5줄 불릿포인트로 전문 요약\n\n\n\n### 출력 (JSON)\n{\n \"summary\": \"...\",\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1856,
+        944
+      ],
+      "id": "e87b1bd1-155c-4222-8859-208f92a43432",
+      "name": "Summary & Tagging",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 입력: Firecrawl markdown OR 일반 HTML 텍스트\nconst raw = $input.first().json.contents || '';\n\n// 1. JSON 이스케이프 복원\nlet md = raw\n  .replace(/^\"|\"$/g, '')    // 앞뒤 \"\n  .replace(/\\\\\"/g, '\"')\n  .replace(/\\\\n/g, '\\n')\n  .replace(/\\\\t/g, '\\t')\n  .replace(/\\\\\\\\/g, '\\\\')\n  .trim();\n\n// 2. HTML 태그 제거 (The Verge 등)\nmd = md.replace(/<[^>]*>/g, '');\n\n// 3. 엔티티 복원\nmd = md\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, \"'\");\n\n// 4. 링크 & 이미지 제거 (Firecrawl 스타일)\nmd = md\n  .replace(/\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1')  // [text](url)\n  .replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1') // ![alt](src)\n  .replace(/https?:\\/\\/[^\\s)]+/g, '')       // 순수 URL\n\n// 5. 코드/스크립트 제거\nmd = md\n  .replace(/```[\\s\\S]*?```/g, '')\n  .replace(/`[^`]*`/g, '')\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, '');\n\n// 6. TechCrunch & The Verge 배너 제거\nmd = md\n  .replace(/Techtober.*Engadget.*/gi, '')\n  .replace(/This article originally appeared.*/gi, '')\n  .replace(/Engadget’s best of 2025.*/gi, '')\n  .replace(/In case you missed it.*/gi, '')\n  .replace(/Other recent reviews.*/gi, '')\n  .replace(/src=rss.*/gi, '')\n  .replace(/Keep reading.*/gi, '')\n  .replace(/Loading the next.*/gi, '')\n  .replace(/Subscribe to our.*/gi, '');\n\n// 7. 제목 자동 감지 (TechCrunch: 제품명, The Verge: # Title)\nlet title = '';\nlet startIndex = 0;\n\nconst h1Match = md.match(/#\\s+(.+)/); // Markdown 제목\nconst productMatch = md.match(/([A-Z][A-Za-z0-9'& -]+ (Pro|Max|Air|Go|Studio|VPN|Fit))/); // 제품명\n\nif (h1Match) {\n  title = h1Match[1];\n  startIndex = md.indexOf(h1Match[0]);\n} else if (productMatch) {\n  title = productMatch[0];\n  startIndex = md.indexOf(title);\n}\n\nmd = startIndex > 0 ? md.substring(startIndex) : md;\n\n// 8. 끝부분 자르기\nconst stopPatterns = [\n  /Engadget.*review recap/i,\n  /In other reviews/i,\n  /We announced our best/i,\n  /Follow @Engadget/i\n];\nlet endIndex = md.length;\nfor (const p of stopPatterns) {\n  const m = md.match(p);\n  if (m && md.indexOf(m[0]) < endIndex) endIndex = md.indexOf(m[0]);\n}\nmd = md.substring(0, endIndex).trim();\n\n// 9. 문장 정리\nmd = md\n  .replace(/\\s+/g, ' ')\n  .replace(/\\.([A-Z])/g, '. $1')\n  .replace(/([.!?])\\s*([A-Z])/g, '$1\\n$2')\n  .trim();\n\n// 10. 안전 문자만 남기기\nmd = md\n  .replace(/[^a-zA-Z0-9.'\"_ -]/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// 11. 결과 반환\nreturn [{\n  json: {\n    contents: JSON.stringify(md),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2240,
+        944
+      ],
+      "id": "319c7160-3fb0-4b5d-9d89-6d0d9f8bcc76",
+      "name": "cleansing article",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 입력: Firecrawl markdown OR 일반 HTML 텍스트\nconst raw = $input.first().json.content || '';\n\n// 1. JSON 이스케이프 복원\nlet md = raw\n  .replace(/^\"|\"$/g, '')    // 앞뒤 \"\n  .replace(/\\\\\"/g, '\"')\n  .replace(/\\\\n/g, '\\n')\n  .replace(/\\\\t/g, '\\t')\n  .replace(/\\\\\\\\/g, '\\\\')\n  .trim();\n\n// 2. HTML 태그 제거 (The Verge 등)\nmd = md.replace(/<[^>]*>/g, '');\n\n// 3. 엔티티 복원\nmd = md\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, \"'\");\n\n// 4. 링크 & 이미지 제거 (Firecrawl 스타일)\nmd = md\n  .replace(/\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1')  // [text](url)\n  .replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1') // ![alt](src)\n  .replace(/https?:\\/\\/[^\\s)]+/g, '')       // 순수 URL\n\n// 5. 코드/스크립트 제거\nmd = md\n  .replace(/```[\\s\\S]*?```/g, '')\n  .replace(/`[^`]*`/g, '')\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, '');\n\n// 6. TechCrunch & The Verge 배너 제거\nmd = md\n  .replace(/Techtober.*Engadget.*/gi, '')\n  .replace(/This article originally appeared.*/gi, '')\n  .replace(/Engadget’s best of 2025.*/gi, '')\n  .replace(/In case you missed it.*/gi, '')\n  .replace(/Other recent reviews.*/gi, '')\n  .replace(/src=rss.*/gi, '')\n  .replace(/Keep reading.*/gi, '')\n  .replace(/Loading the next.*/gi, '')\n  .replace(/Subscribe to our.*/gi, '');\n\n// 7. 제목 자동 감지 (TechCrunch: 제품명, The Verge: # Title)\nlet title = '';\nlet startIndex = 0;\n\nconst h1Match = md.match(/#\\s+(.+)/); // Markdown 제목\nconst productMatch = md.match(/([A-Z][A-Za-z0-9'& -]+ (Pro|Max|Air|Go|Studio|VPN|Fit))/); // 제품명\n\nif (h1Match) {\n  title = h1Match[1];\n  startIndex = md.indexOf(h1Match[0]);\n} else if (productMatch) {\n  title = productMatch[0];\n  startIndex = md.indexOf(title);\n}\n\nmd = startIndex > 0 ? md.substring(startIndex) : md;\n\n// 8. 끝부분 자르기\nconst stopPatterns = [\n  /Engadget.*review recap/i,\n  /In other reviews/i,\n  /We announced our best/i,\n  /Follow @Engadget/i\n];\nlet endIndex = md.length;\nfor (const p of stopPatterns) {\n  const m = md.match(p);\n  if (m && md.indexOf(m[0]) < endIndex) endIndex = md.indexOf(m[0]);\n}\nmd = md.substring(0, endIndex).trim();\n\n// 9. 문장 정리\nmd = md\n  .replace(/\\s+/g, ' ')\n  .replace(/\\.([A-Z])/g, '. $1')\n  .replace(/([.!?])\\s*([A-Z])/g, '$1\\n$2')\n  .trim();\n\n// 10. 안전 문자만 남기기\nmd = md\n  .replace(/[^a-zA-Z0-9.'\"_ -]/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// 11. 결과 반환\nreturn [{\n  json: {\n    contents: JSON.stringify(md),\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1904,
+        416
+      ],
+      "id": "d33b5911-f8af-4516-9cd0-7d2918bbfa35",
+      "name": "cleansing content first",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    text: $('cleansing article').first().json.contents, // 청킹될 본문\n    metadata: {\n      article_id: $('Create news record').first().json.id, // articles 테이블의 ID\n      link: $('Universal Parser').first().json.link,\n      title: $('Universal Parser').first().json.title,\n      summary: JSON.stringify($input.first().json.summary),\n      date : $('Universal Parser').first().json.published_at?.slice(0,10)\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2368,
+        1152
+      ],
+      "id": "2e0789ec-8d5a-48a6-8ad5-03df7e1b3ca1",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -2144,
+        1152
+      ],
+      "id": "2d3580c8-88da-43cd-8bf0-a7a4e72a975a",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2208,
+        1392
+      ],
+      "id": "158eb6cd-7847-41b9-a32c-aaa591b02b80",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KQZvlydfNL4rV435",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "article_id",
+                "value": "={{ $json.metadata.article_id  }}"
+              },
+              {
+                "name": "link",
+                "value": "={{ $json.metadata.link }}"
+              },
+              {
+                "name": "=title",
+                "value": "={{ $json.metadata.title }}"
+              },
+              {
+                "name": "summary",
+                "value": "={{ $json.metadata.summary }}"
+              },
+              {
+                "name": "date",
+                "value": "={{ $json.metadata.date }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -2048,
+        1392
+      ],
+      "id": "62236496-7fdd-4bcb-852c-a55b37360bf0",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -2080,
+        1632
+      ],
+      "id": "f781f175-33ff-4b1e-b301-e3d6773397ca",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Create news record').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "relevance_grade",
+              "fieldValue": "={{ $('Evaluating').item.json.message.content.grade }}"
+            },
+            {
+              "fieldId": "alignment_reason",
+              "fieldValue": "={{ $('Evaluating').item.json.message.content.reason }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "rejected"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $('cleansing content first').item.json.contents }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        624
+      ],
+      "id": "52a89e46-34bc-4b71-94b2-6700c3f20574",
+      "name": "Update relevance",
+      "credentials": {
+        "supabaseApi": {
+          "id": "OJue8nmdRqyBI5uL",
+          "name": "newhackers supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "isoDate",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        128
+      ],
+      "id": "e8b2e606-b1ca-4886-8365-8e9db33c1eff",
+      "name": "Sort by Date"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every Day 9AM": {
+      "main": [
+        [
+          {
+            "node": "Define RSS Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define RSS Feeds": {
+      "main": [
+        [
+          {
+            "node": "Split Feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Feeds": {
+      "main": [
+        [
+          {
+            "node": "Read RSS Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Sort by Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is High?": {
+      "main": [
+        [
+          {
+            "node": "Need Crawl?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update relevance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Crawl?": {
+      "main": [
+        [
+          {
+            "node": "Extract Data by Firecrawl",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Content": {
+      "main": [
+        [
+          {
+            "node": "cleansing article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "DataIsExist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Universal Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Universal Parser": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DataIsExist": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create news record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update embedding": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create news record": {
+      "main": [
+        [
+          {
+            "node": "Set evaluating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set evaluating": {
+      "main": [
+        [
+          {
+            "node": "cleansing content first",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data by Firecrawl": {
+      "main": [
+        [
+          {
+            "node": "Merge Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluating": {
+      "main": [
+        [
+          {
+            "node": "Is High?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary & Tagging": {
+      "main": [
+        [
+          {
+            "node": "Update embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cleansing article": {
+      "main": [
+        [
+          {
+            "node": "Summary & Tagging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cleansing content first": {
+      "main": [
+        [
+          {
+            "node": "Evaluating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update relevance": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort by Date": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "388b6309-2dcc-4779-b976-781438d79d36",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "obGofovmqU1G12YG",
+  "tags": []
+}

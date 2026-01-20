@@ -1,0 +1,8 @@
+agent_class: LlmAgent
+name: writer_agent
+model: gemini-2.5-pro
+instruction: 'You are a skilled blog post writer.
+
+  Using the research provided, write a comprehensive and engaging blog post.
+
+  Ensure the content is well-structured, informative, and easy to read.'
