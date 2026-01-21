@@ -33,7 +33,6 @@
 
 ```
 official_n8n/
-├── docs/                    # 강의 개요 문서
 ├── lecture_note/            # 차시별 학습노트 (1~18차시 + 무료차시)
 └── source_workflow/         # 차시별 소스코드 및 n8n 워크플로우
     ├── free/                # 무료차시 - 다이어리 웹
