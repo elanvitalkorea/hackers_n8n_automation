@@ -32,26 +32,26 @@
 ## 디렉토리 구조
 
 ```
-official_n8n/
+hackers_n8n_automation/
 ├── lecture_note/            # 차시별 학습노트 (1~18차시 + 무료차시)
 └── source_workflow/         # 차시별 소스코드 및 n8n 워크플로우
-    ├── free/                # 무료차시 - 다이어리 웹
-    ├── 2nd/                 # 2차시 - Cursor AI HTML/JS
-    ├── 3rd/                 # 3차시 - SaaS Starter
-    ├── 4th/                 # 4차시 - Node.js 백엔드 (CRUD)
-    ├── 5th/                 # 5차시 - 인증 시스템
-    ├── 6th/                 # 6차시 - MCP 실습
-    ├── 8th/                 # 8차시 - SNS 콘텐츠 자동화
-    ├── 9th/                 # 9차시 - 웹크롤링 (FireCrawl)
-    ├── 10th/                # 10차시 - AI Agent & RAG
-    ├── 11th/                # 11차시 - Next.js 설문 리포트 + Next.js UI 실습(여러 예제)
-    ├── 12th/                # 12차시 - 웹앱 배포
-    ├── 13th/                # 13차시 - 백엔드 배포
-    ├── 14th/                # 14차시 - Smart RAG 파이프라인
-    ├── 15th/                # 15차시 - Flutter 명함 인식 앱
-    ├── 16th/                # 16차시 - 유튜버-광고주 매칭 준비
-    ├── 17th/                # 17차시 - 매칭 Agent 구현 (+ `survey_backend3` 백엔드/배포 예제)
-    └── 18th/                # 18차시 - MCP 서버 및 Agent 연계 (+ Python 에이전트 예제)
+    ├── free/                # 무료차시 - 다이어리 웹 (+ n8n 워크플로우)
+    ├── 02/                  # 2차시 - Cursor AI HTML/JS
+    ├── 03/                  # 3차시 - SaaS Starter
+    ├── 04/                  # 4차시 - Node.js 백엔드 (CRUD)
+    ├── 05/                  # 5차시 - 인증 시스템
+    ├── 06/                  # 6차시 - MCP 실습
+    ├── 08/                  # 8차시 - SNS 콘텐츠 자동화
+    ├── 09/                  # 9차시 - 웹크롤링 (FireCrawl)
+    ├── 10/                  # 10차시 - AI Agent & RAG
+    ├── 11/                  # 11차시 - Next.js 설문 리포트 + Next.js UI 실습(여러 예제)
+    ├── 12/                  # 12차시 - 웹앱 배포
+    ├── 13/                  # 13차시 - 백엔드 배포
+    ├── 14/                  # 14차시 - Smart RAG 파이프라인
+    ├── 15/                  # 15차시 - Flutter 명함 인식 앱
+    ├── 16/                  # 16차시 - 유튜버-광고주 매칭 준비
+    ├── 17/                  # 17차시 - 매칭 Agent 구현 (+ `survey_backend3` 백엔드/배포 예제)
+    └── 18/                  # 18차시 - MCP 서버 및 Agent 연계 (+ Python 에이전트 예제)
 ```
 
 > 참고: 1차시/7차시는 성격상 “코드 프로젝트 폴더”가 없을 수 있으며, 내용은 `lecture_note/` 중심으로 제공됩니다.
@@ -104,9 +104,9 @@ official_n8n/
 
 ### n8n 워크플로우 파일 (.json)
 
-워크플로우 파일은 주로 `source_workflow/{차시}/` 아래에 있습니다. 예:
+워크플로우 파일은 주로 `source_workflow/{차시번호}/` 아래에 있습니다. 예:
 - `source_workflow/free/free_n8n diary flow.json`
-- `source_workflow/10th/10-1. Telegram Agent.json`
+- `source_workflow/10/10-1. Telegram Agent.json`
 
 | 파일명 | 설명 |
 |--------|------|
@@ -130,7 +130,7 @@ official_n8n/
 
 | 프로젝트 | 기술 스택 | 설명 |
 |----------|-----------|------|
-| `4thhackers`, `5thhackers` | Node.js | 백엔드 CRUD & 인증 |
+| `04`, `05` | Node.js | 백엔드 CRUD & 인증 (예제 서버) |
 | `saas-starter` | Next.js | SaaS 스타터 템플릿 |
 | `mcptest`, `mcpmemo5` | MCP | MCP 실습 프로젝트 |
 | `survey_report` | Next.js + ShadCN | 설문 리포트 웹 |
@@ -171,17 +171,17 @@ cat lecture_note/1차시\ 학습노트.md
 
 ```bash
 # Node.js 프로젝트 (예: 4차시)
-cd source_workflow/4th/4thhackers
+cd source_workflow/04
 npm install
-npm start
+node app.js
 
 # Next.js 프로젝트 (예: 11차시)
-cd source_workflow/11th/survey_report
+cd source_workflow/11/survey_report
 npm install
 npm run dev
 
 # Flutter 프로젝트 (예: 15차시)
-cd source_workflow/15th/bzcard
+cd source_workflow/15/bzcard
 flutter pub get
 flutter run
 ```
@@ -189,7 +189,7 @@ flutter run
 #### 실행 팁 (환경설정 파일)
 
 - **Node/Next.js**: 프로젝트 폴더에 `env.sample` 또는 `.env.example`가 있으면, 이를 참고해 `.env` / `.env.local`을 구성하세요.
-- **Docker**: `docker-compose.yml`이 있는 프로젝트(예: `source_workflow/17th/survey_backend3`)는 Docker 기반으로도 실행할 수 있습니다.
+- **Docker**: `docker-compose.yml`이 있는 프로젝트(예: `source_workflow/17/survey_backend3`)는 Docker 기반으로도 실행할 수 있습니다.
 
 ---
 
